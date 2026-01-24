@@ -53,7 +53,26 @@ data class Chat(
     val isActive: Boolean = true,
     val lastUpdated: Long = System.currentTimeMillis(),
     val isGroup: Boolean = false,
-    val participantIds: List<String> = emptyList() // For group chats
+    val participantIds: List<String> = emptyList(), // For group chats
+    val isMuted: Boolean = false
+)
+
+/**
+ * Message model for chat messages
+ * Maps to backend Message model (sender_id, receiver_id)
+ * Includes reply support for future implementation
+ */
+data class Message(
+    val id: Int,
+    val senderId: Int,
+    val receiverId: Int? = null,
+    val content: String,
+    val timestamp: Long, // Epoch milliseconds
+    val isDelivered: Boolean = false,
+    val isRead: Boolean = false,
+    val readAt: Long? = null,
+    val source: String = "own_messenger", // "own_messenger" or "telegram"
+    val replyToMessageId: Int? = null // For reply system
 )
 
 /**
@@ -410,25 +429,55 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
                             tosError.isNotEmpty()
 
                 if (!hasAnyError) {
-                    // save user "to database"
-                    val newUser = User(
-                        email = email,
-                        username = username,
-                        password = password
-                    )
-                    DatabaseHelper.addUser(newUser)
+                    // Register user via backend API
+                    val userRepository = com.example.ihatemylife.repository.UserRepository(context)
+                    
+                    // Use coroutine scope for async operation
+                    kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
+                        val result = userRepository.registerUser(username, password)
+                        
+                        result.onSuccess { apiUser ->
+                            // Save user locally as well (for backward compatibility)
+                            val newUser = User(
+                                email = email, // Keep email for local storage
+                                username = apiUser.username,
+                                password = password
+                            )
+                            DatabaseHelper.addUser(newUser)
+                            
+                            // Remember that this user has registered/logged in on this device
+                            val prefs = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+                            prefs.edit()
+                                .putBoolean("logged_in", true)
+                                .putString("user_identifier", email) // Keep email for compatibility
+                                .putString("username", apiUser.username)
+                                .putInt("user_id", apiUser.id) // Store backend user ID
+                                .apply()
 
-                    // Remember that this user has registered/logged in on this device
-                    val prefs = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
-                    prefs.edit()
-                        .putBoolean("logged_in", true)
-                        .putString("user_identifier", newUser.email)
-                        .putString("username", newUser.username)
-                        .apply()
+                            // navigate to chats
+                            val intent = Intent(context, ChatsActivity::class.java)
+                            context.startActivity(intent)
+                        }.onFailure { exception ->
+                            // Show error - registration failed
+                            // For now, fall back to local registration
+                            val newUser = User(
+                                email = email,
+                                username = username,
+                                password = password
+                            )
+                            DatabaseHelper.addUser(newUser)
 
-                    // navigate to chats
-                    val intent = Intent(context, ChatsActivity::class.java)
-                    context.startActivity(intent)
+                            val prefs = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+                            prefs.edit()
+                                .putBoolean("logged_in", true)
+                                .putString("user_identifier", newUser.email)
+                                .putString("username", newUser.username)
+                                .apply()
+
+                            val intent = Intent(context, ChatsActivity::class.java)
+                            context.startActivity(intent)
+                        }
+                    }
                 }
             }
         ) {

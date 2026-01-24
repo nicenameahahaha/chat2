@@ -35,6 +35,9 @@ import androidx.compose.material3.rememberDrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,9 +49,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.ihatemylife.ui.theme.IhatemylifeTheme
+import com.example.ihatemylife.viewmodel.ChatsViewModel
 import kotlinx.coroutines.launch
 import android.app.Activity
+import android.app.Application
 
 class ChatsActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
@@ -67,6 +75,7 @@ class ChatsActivity : ComponentActivity() {
 @Composable
 fun ChatsScreen() {
     val context = LocalContext.current
+    val application = context.applicationContext as? Application
     val prefs = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
     val email = prefs.getString("user_identifier", "email@example.com") ?: "email@example.com"
     // Get username from DatabaseHelper using the stored email
@@ -76,9 +85,14 @@ fun ChatsScreen() {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
-    // Centralized active chat list from DatabaseHelper.
-    // When there are no active chats, the UI will behave exactly as before.
-    val activeChats = DatabaseHelper.getActiveChats()
+    // Use ViewModel for chat list
+    val viewModel: ChatsViewModel? = if (application != null) {
+        viewModel { ChatsViewModel(application) }
+    } else {
+        null
+    }
+    
+    val activeChats by viewModel?.chats?.collectAsState() ?: remember { mutableStateOf(emptyList<Chat>()) }
 
     // Handle back button: open drawer if closed, quit app if drawer is open
     BackHandler(enabled = true) {

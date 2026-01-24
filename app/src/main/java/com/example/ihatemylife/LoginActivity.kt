@@ -27,6 +27,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.example.ihatemylife.ui.theme.IhatemylifeTheme
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import com.example.ihatemylife.repository.UserRepository
 
 class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -79,9 +83,10 @@ fun LoginScreen(modifier: Modifier = Modifier) {
 
         Button(
             onClick = {
-                // Check user in DatabaseHelper:
-                // 1) Try treat first field as email
-                // 2) If not found, treat as username
+                errorMessage = ""
+                
+                // For now, use DatabaseHelper as fallback
+                // TODO: Implement backend authentication when backend adds login endpoint
                 val userByEmail = DatabaseHelper.userByEmail(login)
                 val userByUsername =
                     if (userByEmail == null) DatabaseHelper.userByUsername(login) else null
