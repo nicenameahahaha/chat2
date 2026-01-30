@@ -48,5 +48,19 @@ interface MessageDao {
     
     @Query("SELECT * FROM messages WHERE replyToMessageId = :messageId")
     suspend fun getRepliesToMessage(messageId: Int): List<MessageEntity>
+
+    /**
+     * Last activity timestamp for presence (last seen).
+     * Returns the latest message timestamp where the user is sender or receiver.
+     */
+    @Query("SELECT MAX(timestamp) FROM messages WHERE senderId = :userId OR receiverId = :userId")
+    suspend fun getLastActivityTimestampForUser(userId: Int): Long?
+
+    /**
+     * Distinct user IDs that appear in messages (senders and receivers).
+     * Used to discover users from synced messages and insert placeholders into users table.
+     */
+    @Query("SELECT DISTINCT senderId FROM messages UNION SELECT DISTINCT receiverId FROM messages WHERE receiverId IS NOT NULL")
+    suspend fun getDistinctUserIdsFromMessages(): List<Int>
 }
 

@@ -31,16 +31,20 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -54,9 +58,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.BorderStroke
 import com.example.ihatemylife.ui.theme.IhatemylifeTheme
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.rememberCoroutineScope
+import com.example.ihatemylife.DatabaseHelper.addContact
+import com.example.ihatemylife.repository.ChatRepository
+import com.example.ihatemylife.repository.ContactRepository
+import com.example.ihatemylife.repository.UserRepository
 
 /**
  * Centralized validation helpers for contact creation.
@@ -143,8 +152,10 @@ class NewChatActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        val prefs = getSharedPreferences("app_settings", Context.MODE_PRIVATE)
+        val isDarkTheme = prefs.getBoolean("dark_theme", true)
         setContent {
-            IhatemylifeTheme {
+            IhatemylifeTheme(darkTheme = isDarkTheme) {
                 NewChatScreen()
             }
         }
@@ -159,9 +170,10 @@ fun NewChatScreen() {
     val activity = context as? ComponentActivity
     val scope = rememberCoroutineScope()
     
-    // Get current user ID
+    // Get current user ID and backend user ID (for API sync)
     val prefs = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
     val currentUserId = prefs.getString("user_identifier", "") ?: ""
+    val backendUserId = prefs.getInt("user_id", -1).takeIf { it > 0 }
     
     // State management
     var searchQuery by remember { mutableStateOf("") }
@@ -170,14 +182,40 @@ fun NewChatScreen() {
     var showNewContactSheet by remember { mutableStateOf(false) }
     var showGroupSelection by remember { mutableStateOf(false) }
     
-    // Get all available users/contacts for current user
-    val allContacts = DatabaseHelper.getAllAvailableUsers(currentUserId)
-    
+    val contactRepository = remember { ContactRepository(context) }
+    val userRepository = remember { UserRepository(context) }
+    val roomContacts by contactRepository.getContactsForUser(currentUserId).collectAsState(initial = emptyList())
+    val roomUsers by userRepository.getAllUsersFlow().collectAsState(initial = emptyList())
+    val systemUsersAsContacts = remember {
+        DatabaseHelper.getAllUsers().map { user ->
+            Contact(
+                id = user.email,
+                firstName = user.username,
+                lastName = "",
+                email = user.email,
+                username = user.username
+            )
+        }
+    }
+    // Pseudo-global user list: Room users (including discovered from message sync) + DatabaseHelper + user-created contacts
+    val roomUsersAsContacts = roomUsers.map { u ->
+        Contact(id = u.id.toString(), firstName = u.username, lastName = "", email = null, phone = null, username = u.username)
+    }
+    val allContacts = (roomUsersAsContacts + systemUsersAsContacts + roomContacts)
+        .distinctBy { it.username ?: it.email ?: it.id }
+
     // Filter and sort contacts
     val filteredContacts = if (searchQuery.isBlank()) {
         allContacts
     } else {
-        DatabaseHelper.searchContacts(currentUserId, searchQuery)
+        val q = searchQuery.lowercase()
+        allContacts.filter {
+            it.firstName.lowercase().contains(q) ||
+                it.lastName.lowercase().contains(q) ||
+                (it.email?.lowercase()?.contains(q) == true) ||
+                (it.phone?.contains(q) == true) ||
+                (it.username?.lowercase()?.contains(q) == true)
+        }
     }
     
     val sortedContacts = if (sortAscending) {
@@ -191,32 +229,45 @@ fun NewChatScreen() {
             TopAppBar(
                 title = { 
                     if (isSearchActive) {
-                        OutlinedTextField(
-                            value = searchQuery,
-                            onValueChange = { searchQuery = it },
-                            placeholder = { Text("Search by email, phone, username") },
+                        Row(
                             modifier = Modifier.fillMaxWidth(),
-                            singleLine = true,
-                            trailingIcon = {
-                                if (searchQuery.isNotEmpty()) {
-                                    IconButton(
-                                        onClick = { 
-                                            searchQuery = ""
-                                            isSearchActive = false
-                                        }
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Close,
-                                            contentDescription = "Clear search"
-                                        )
-                                    }
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            OutlinedTextField(
+                                value = searchQuery,
+                                onValueChange = { searchQuery = it },
+                                placeholder = { Text("Search by email, phone, username") },
+                                modifier = Modifier.weight(1f),
+                                singleLine = true,
+                                shape = RoundedCornerShape(16.dp),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = MaterialTheme.colorScheme.outline,
+                                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                                    cursorColor = MaterialTheme.colorScheme.primary
+                                )
+                            )
+                            Spacer(modifier = Modifier.padding(horizontal = 8.dp))
+                            IconButton(
+                                onClick = {
+                                    isSearchActive = false
+                                    searchQuery = ""
                                 }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = "Close search"
+                                )
                             }
-                        )
+                        }
                     } else {
                         Text("New Chat")
                     }
                 },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background
+                ),
                 navigationIcon = {
                     IconButton(
                         onClick = {
@@ -244,25 +295,42 @@ fun NewChatScreen() {
                                 contentDescription = "Search"
                             )
                         }
+                        Text(
+                            text = if (sortAscending) "A-Z" else "Z-A",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier
+                                .clickable { sortAscending = !sortAscending }
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
                     }
-                    Text(
-                        text = if (sortAscending) "A-Z" else "Z-A",
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier
-                            .clickable { sortAscending = !sortAscending }
-                            .padding(horizontal = 16.dp, vertical = 12.dp),
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
                 }
             )
-        }
+        },
+        containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
+            if (isSearchActive) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = if (sortAscending) "A-Z" else "Z-A",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.clickable { sortAscending = !sortAscending },
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            }
             // Action buttons: New Group and New Contact
             Row(
                 modifier = Modifier
@@ -323,15 +391,19 @@ fun NewChatScreen() {
                                     isActive = true
                                 )
                                 DatabaseHelper.addChat(newChat)
+                            scope.launch {
+                                ChatRepository(context).upsertChat(newChat)
+                            }
                             }
                             
-                            // Navigate to ChatActivity
                             val intent = Intent(context, ChatActivity::class.java).apply {
                                 putExtra("chat_id", chatId)
                                 putExtra("chat_title", chatTitle)
                                 putExtra("contact_id", contact.id)
+                                putExtra("other_username", contact.username ?: "")
                             }
                             context.startActivity(intent)
+                            activity?.finish()
                         }
                     )
                 }
@@ -339,41 +411,47 @@ fun NewChatScreen() {
         }
     }
     
-    // New Contact Bottom Sheet
-    if (showNewContactSheet) {
-        NewContactBottomSheet(
-            onDismiss = { showNewContactSheet = false },
-            onCreateContact = { contact ->
-                // Add contact for current user (user-scoped) with duplicate check
-                val (success, errorMessage) = DatabaseHelper.addContact(currentUserId, contact)
-                
-                if (success) {
-                    // Create a chat with this contact
-                    val chat = Chat(
-                        id = "chat_${System.currentTimeMillis()}",
-                        title = "${contact.firstName} ${contact.lastName}".trim(),
-                        lastMessage = "Chat started",
-                        isActive = true
+        // New Contact Bottom Sheet
+        if (showNewContactSheet) {
+            NewContactBottomSheet(
+                onDismiss = { showNewContactSheet = false },
+                onCreateContact = { contact ->
+                    val contactRepository = ContactRepository(context)
+                    val result = contactRepository.addContact(contact, currentUserId, backendUserId)
+                    result.fold(
+                        onSuccess = {
+                            addContact(currentUserId, contact)
+                            val chat = Chat(
+                                id = "chat_${System.currentTimeMillis()}",
+                                title = "${contact.firstName} ${contact.lastName}".trim(),
+                                lastMessage = "Chat started",
+                                isActive = true
+                            )
+                            DatabaseHelper.addChat(chat)
+                            scope.launch {
+                                ChatRepository(context).upsertChat(chat)
+                            }
+                            Pair(true, "")
+                        },
+                        onFailure = { exception ->
+                            Pair(false, exception.message ?: "Failed to create contact")
+                        }
                     )
-                    DatabaseHelper.addChat(chat)
-                    // Return success - sheet will close
-                    Pair(true, "")
-                } else {
-                    // Return error - sheet will show duplicate error
-                    Pair(false, errorMessage)
                 }
-            }
-        )
-    }
+            )
+        }
     
-    // Group Selection Screen
+    // Group Selection Screen (uses same contact list: Room + system users)
     if (showGroupSelection) {
         GroupSelectionScreen(
             onDismiss = { showGroupSelection = false },
             onCreateGroup = { title, participantIds ->
-                DatabaseHelper.createGroupChat(title, participantIds)
+                val chat = DatabaseHelper.createGroupChat(title, participantIds)
+                scope.launch { ChatRepository(context).upsertChat(chat) }
                 showGroupSelection = false
-            }
+            },
+            currentUserId = currentUserId,
+            contactRepository = contactRepository
         )
     }
 }
@@ -389,7 +467,11 @@ fun ContactItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
-        shape = RoundedCornerShape(8.dp)
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Row(
             modifier = Modifier
@@ -402,7 +484,7 @@ fun ContactItem(
                 modifier = Modifier
                     .size(48.dp)
                     .background(
-                        Color.Gray.copy(alpha = 0.3f),
+                        MaterialTheme.colorScheme.surfaceVariant,
                         shape = RoundedCornerShape(24.dp)
                     ),
                 contentAlignment = Alignment.Center
@@ -410,7 +492,8 @@ fun ContactItem(
                 Text(
                     text = contact.firstName.take(1).uppercase(),
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             
@@ -445,8 +528,9 @@ fun ContactItem(
 @Composable
 fun NewContactBottomSheet(
     onDismiss: () -> Unit,
-    onCreateContact: (Contact) -> Pair<Boolean, String> // Returns (success, errorMessage)
+    onCreateContact: suspend (Contact) -> Pair<Boolean, String> // Returns (success, errorMessage)
 ) {
+    val scope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var firstName by remember { mutableStateOf("") }
     var lastName by remember { mutableStateOf("") }
@@ -616,14 +700,14 @@ fun NewContactBottomSheet(
                         phone = if (phone.isNotBlank() && phoneResult.isValid) "+7$phone" else null // Add +7 prefix
                     )
                     
-                    // Try to create contact (includes duplicate check)
-                    val (success, errorMsg) = onCreateContact(contact)
-                    if (success) {
-                        // Success - close sheet
-                        onDismiss()
-                    } else {
-                        // Show duplicate error
-                        duplicateError = errorMsg
+                    // Try to create contact (includes duplicate check) in coroutine
+                    scope.launch {
+                        val (success, errorMsg) = onCreateContact(contact)
+                        if (success) {
+                            onDismiss()
+                        } else {
+                            duplicateError = errorMsg
+                        }
                     }
                 },
                 modifier = Modifier.fillMaxWidth()
@@ -638,15 +722,26 @@ fun NewContactBottomSheet(
 @Composable
 fun GroupSelectionScreen(
     onDismiss: () -> Unit,
-    onCreateGroup: (String, List<String>) -> Unit
+    onCreateGroup: (String, List<String>) -> Unit,
+    currentUserId: String,
+    contactRepository: ContactRepository
 ) {
     val context = LocalContext.current
-    val prefs = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
-    val currentUserEmail = prefs.getString("user_identifier", "") ?: ""
-    
+    val roomContacts by contactRepository.getContactsForUser(currentUserId).collectAsState(initial = emptyList())
+    val systemUsersAsContacts = remember {
+        DatabaseHelper.getAllUsers().map { user ->
+            Contact(
+                id = user.email,
+                firstName = user.username,
+                lastName = "",
+                email = user.email,
+                username = user.username
+            )
+        }
+    }
+    val allContacts = (systemUsersAsContacts + roomContacts).distinctBy { it.id }
+
     var selectedContactIds by remember { mutableStateOf(setOf<String>()) }
-    // Get contacts for current user
-    val allContacts = DatabaseHelper.getAllAvailableUsers(currentUserEmail)
     
     Scaffold(
         topBar = {
@@ -679,7 +774,7 @@ fun GroupSelectionScreen(
             LazyColumn(
                 modifier = Modifier.weight(1f)
             ) {
-                items(allContacts.filter { it.id != currentUserEmail }) { contact ->
+                items(allContacts.filter { it.id != currentUserId }) { contact ->
                     SelectableContactItem(
                         contact = contact,
                         isSelected = selectedContactIds.contains(contact.id),
@@ -701,7 +796,7 @@ fun GroupSelectionScreen(
                     Button(
                         onClick = {
                             val groupTitle = "Group Chat (${totalParticipants} members)"
-                            val participantIds = listOf(currentUserEmail) + selectedContactIds.toList()
+                            val participantIds = listOf(currentUserId) + selectedContactIds.toList()
                             onCreateGroup(groupTitle, participantIds)
                         },
                         modifier = Modifier
@@ -734,7 +829,11 @@ fun SelectableContactItem(
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp)
             .clickable(onClick = onToggle),
-        shape = RoundedCornerShape(8.dp)
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Row(
             modifier = Modifier
@@ -757,7 +856,7 @@ fun SelectableContactItem(
                     Icon(
                         imageVector = Icons.Default.Check,
                         contentDescription = "Selected",
-                        tint = Color.White,
+                        tint = MaterialTheme.colorScheme.onPrimary,
                         modifier = Modifier.size(16.dp)
                     )
                 }
@@ -770,7 +869,7 @@ fun SelectableContactItem(
                 modifier = Modifier
                     .size(48.dp)
                     .background(
-                        Color.Gray.copy(alpha = 0.3f),
+                        MaterialTheme.colorScheme.surfaceVariant,
                         shape = RoundedCornerShape(24.dp)
                     ),
                 contentAlignment = Alignment.Center
@@ -778,7 +877,8 @@ fun SelectableContactItem(
                 Text(
                     text = contact.firstName.take(1).uppercase(),
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             
@@ -801,3 +901,4 @@ fun SelectableContactItem(
         }
     }
 }
+    

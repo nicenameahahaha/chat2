@@ -27,17 +27,19 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.example.ihatemylife.ui.theme.IhatemylifeTheme
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import androidx.lifecycle.lifecycleScope
+import com.example.ihatemylife.database.AppDatabase
+import com.example.ihatemylife.database.entities.UserEntity
 import kotlinx.coroutines.launch
-import com.example.ihatemylife.repository.UserRepository
 
 class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        val prefs = getSharedPreferences("app_settings", Context.MODE_PRIVATE)
+        val isDarkTheme = prefs.getBoolean("dark_theme", true)
         setContent {
-            IhatemylifeTheme {
+            IhatemylifeTheme(darkTheme = isDarkTheme) {
                 Scaffold(
                     modifier = Modifier.fillMaxSize()
                 ) { innerPadding ->
@@ -106,8 +108,19 @@ fun LoginScreen(modifier: Modifier = Modifier) {
                         .putString("username", user.username)
                         .apply()
 
-                    val intent = Intent(context, ChatsActivity::class.java)
-                    context.startActivity(intent)
+                    // Ensure user exists in Room so ChatViewModel can resolve currentUserId and load messages
+                    val activity = context as? ComponentActivity
+                    activity?.lifecycleScope?.launch {
+                        val userDao = AppDatabase.getDatabase(context.applicationContext).userDao()
+                        val stableId = user.username.hashCode().and(0x7FFFFFFF).coerceAtLeast(1)
+                        userDao.insertUser(UserEntity(id = stableId, username = user.username))
+                        val intent = Intent(context, ChatsActivity::class.java)
+                        context.startActivity(intent)
+                        activity.finish()
+                    } ?: run {
+                        val intent = Intent(context, ChatsActivity::class.java)
+                        context.startActivity(intent)
+                    }
                 }
             }
         ) {

@@ -1,6 +1,8 @@
 package com.example.ihatemylife.repository
 
 import android.content.Context
+import com.example.ihatemylife.api.ApiClient
+import com.example.ihatemylife.api.models.ApiContactCreate
 import com.example.ihatemylife.database.AppDatabase
 import com.example.ihatemylife.database.dao.ContactDao
 import com.example.ihatemylife.database.entities.ContactEntity
@@ -11,8 +13,10 @@ import kotlinx.coroutines.flow.map
 /**
  * Repository for contact operations
  * Manages user-created contacts (per-user scoped)
+ * Combines local (Room) and remote (API) data sources
  */
 class ContactRepository(context: Context) {
+    private val apiService = ApiClient.getApiService(context)
     private val contactDao: ContactDao = AppDatabase.getDatabase(context).contactDao()
     
     /**
@@ -55,7 +59,7 @@ class ContactRepository(context: Context) {
     /**
      * Add contact for a user
      */
-    suspend fun addContact(contact: Contact, userId: String): Result<Contact> {
+    suspend fun addContact(contact: Contact, userId: String, backendUserId: Int? = null): Result<Contact> {
         return try {
             // Check for duplicates
             val existing = contactDao.findContactByEmailOrPhone(
@@ -72,8 +76,42 @@ class ContactRepository(context: Context) {
                 return Result.failure(Exception("Contact with this $duplicateField already exists"))
             }
             
+            // Save locally first
             contactDao.insertContact(domainToEntity(contact, userId))
+            
+            // Try to sync to backend if userId is available
+            if (backendUserId != null) {
+                syncContactToBackend(contact, backendUserId).onFailure {
+                    // If backend sync fails, contact is still saved locally
+                    // Log error but don't fail the operation
+                }
+            }
+            
             Result.success(contact)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    
+    /**
+     * Sync contact to backend
+     */
+    suspend fun syncContactToBackend(contact: Contact, userId: Int): Result<Unit> {
+        return try {
+            val response = apiService.createContact(
+                ApiContactCreate(
+                    firstName = contact.firstName,
+                    lastName = contact.lastName ?: "",
+                    email = contact.email,
+                    phone = contact.phone,
+                    userId = userId
+                )
+            )
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception(response.message() ?: "Failed to sync contact to backend"))
+            }
         } catch (e: Exception) {
             Result.failure(e)
         }

@@ -6,6 +6,8 @@ import com.example.ihatemylife.api.models.ApiMessageStatusUpdate
 import com.example.ihatemylife.api.models.ApiAllMessagesResponse
 import com.example.ihatemylife.api.models.ApiUserCreate
 import com.example.ihatemylife.api.models.ApiUserOut
+import com.example.ihatemylife.api.models.ApiContactCreate
+import com.example.ihatemylife.api.models.ApiContactOut
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -22,6 +24,10 @@ interface ApiService {
     // User endpoints
     @POST("users/")
     suspend fun registerUser(@Body user: ApiUserCreate): Response<ApiUserOut>
+    
+    // Contact endpoints
+    @POST("contacts/")
+    suspend fun createContact(@Body contact: ApiContactCreate): Response<ApiContactOut>
     
     // Message endpoints
     @POST("messages/")

@@ -9,7 +9,9 @@ import com.example.ihatemylife.database.dao.MessageDao
 import com.example.ihatemylife.database.dao.UserDao
 import com.example.ihatemylife.database.entities.MessageEntity
 import com.example.ihatemylife.Message
+import com.example.ihatemylife.database.entities.UserEntity
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -42,7 +44,8 @@ class MessageRepository(context: Context) {
             isDelivered = apiMessage.isDelivered,
             isRead = apiMessage.isRead,
             readAt = apiMessage.readAt?.let { parseTimestamp(it) },
-            source = apiMessage.source
+            source = apiMessage.source,
+            replyToMessageId = apiMessage.replyToMessageId
         )
     }
     
@@ -60,7 +63,8 @@ class MessageRepository(context: Context) {
             isDelivered = apiMessage.isDelivered,
             isRead = apiMessage.isRead,
             readAt = apiMessage.readAt?.let { parseTimestamp(it) },
-            source = apiMessage.source
+            source = apiMessage.source,
+            replyToMessageId = apiMessage.replyToMessageId
         )
     }
     
@@ -99,13 +103,14 @@ class MessageRepository(context: Context) {
     suspend fun sendMessage(
         senderUsername: String,
         receiverUsername: String,
-        content: String
+        content: String,
+        replyToMessageId: Int? = null
     ): Result<Message> {
         return try {
             val response = apiService.sendMessageToUser(
                 senderUsername,
                 receiverUsername,
-                ApiMessageCreate(content)
+                ApiMessageCreate(content, replyToMessageId = replyToMessageId)
             )
             if (response.isSuccessful && response.body() != null) {
                 val apiMessage = response.body()!!
@@ -136,9 +141,17 @@ class MessageRepository(context: Context) {
         return messageDao.getAllMessagesForUser(userId)
             .map { entities -> entities.map { entityToDomain(it) } }
     }
+
+    /**
+     * Get messages from integrated messengers (e.g. Telegram) for display in chat history.
+     * Placeholder: returns empty list until Telegram integration is implemented.
+     */
+    fun getTelegramMessagesForUser(userId: Int): Flow<List<Message>> = flowOf(emptyList())
     
     /**
-     * Sync messages from API for a user
+     * Sync messages from API for a user.
+     * After inserting messages, discovers sender/receiver IDs and ensures they exist in the users table
+     * (inserts placeholder UserEntity(id, "User$id") so pseudo-global user list includes message peers).
      */
     suspend fun syncMessages(username: String): Result<Unit> {
         return try {
@@ -147,16 +160,31 @@ class MessageRepository(context: Context) {
             if (response.isSuccessful && response.body() != null) {
                 val allMessages = response.body()!!
                 val messages = allMessages.sent + allMessages.received
-                
+
                 // Save to local database
                 val entities = messages.map { apiMessageToEntity(it) }
                 messageDao.insertMessages(entities)
+
+                // Discover users from messages: ensure every sender/receiver exists in users table
+                ensureUsersFromMessages()
                 Result.success(Unit)
             } else {
                 Result.failure(Exception(response.message() ?: "Failed to sync messages"))
             }
         } catch (e: Exception) {
             Result.failure(e)
+        }
+    }
+
+    /**
+     * Ensures all user IDs that appear in messages exist in the users table.
+     * Inserts placeholder UserEntity(id, "User$id") for unknown IDs so the pseudo-global list grows from sync.
+     */
+    private suspend fun ensureUsersFromMessages() {
+        val ids = messageDao.getDistinctUserIdsFromMessages()
+        val existing = userDao.getAllUsers().map { it.id }.toSet()
+        ids.filter { it !in existing }.forEach { id ->
+            userDao.insertUser(UserEntity(id = id, username = "User$id"))
         }
     }
     
@@ -178,6 +206,14 @@ class MessageRepository(context: Context) {
         }
     }
     
+    /**
+     * Last activity timestamp for a user (presence / last seen).
+     * Returns the latest message timestamp where the user is sender or receiver.
+     */
+    suspend fun getLastActivityTimestampForUser(userId: Int): Long? {
+        return messageDao.getLastActivityTimestampForUser(userId)
+    }
+
     /**
      * Mark message as delivered
      */

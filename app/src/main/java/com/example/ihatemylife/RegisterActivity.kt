@@ -33,6 +33,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.example.ihatemylife.ui.theme.IhatemylifeTheme
 import androidx.compose.runtime.mutableStateListOf
+import kotlinx.coroutines.launch
 
 data class User(
     val email: String,
@@ -272,8 +273,10 @@ class RegisterActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        val prefs = getSharedPreferences("app_settings", Context.MODE_PRIVATE)
+        val isDarkTheme = prefs.getBoolean("dark_theme", true)
         setContent {
-            IhatemylifeTheme {
+            IhatemylifeTheme(darkTheme = isDarkTheme) {
                 Scaffold(
                     modifier = Modifier.fillMaxSize()
                 ) { innerPadding ->
@@ -508,7 +511,7 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
                 Text(text = "I agree on ")
                 Text(
                     text = "Terms of Service",
-                    color = Color.Blue,
+                    color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.clickable {
                         val intent = Intent(context, TermsActivity::class.java)
                         context.startActivity(intent)

@@ -13,7 +13,10 @@ data class ApiMessageCreate(
     val content: String,
     
     @SerializedName("receiver_username")
-    val receiverUsername: String? = null
+    val receiverUsername: String? = null,
+    
+    @SerializedName("reply_to_message_id")
+    val replyToMessageId: Int? = null
 )
 
 data class ApiMessageOut(
@@ -42,7 +45,10 @@ data class ApiMessageOut(
     val readAt: String? = null,
     
     @SerializedName("source")
-    val source: String = "own_messenger" // "own_messenger" or "telegram"
+    val source: String = "own_messenger", // "own_messenger" or "telegram"
+    
+    @SerializedName("reply_to_message_id")
+    val replyToMessageId: Int? = null
 )
 
 data class ApiMessageStatusUpdate(
