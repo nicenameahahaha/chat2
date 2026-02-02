@@ -370,31 +370,29 @@ fun NewChatScreen() {
                                 searchQuery = ""
                             }
                             
-                            // Navigate to ChatActivity for this contact
-                            // Check if chat already exists, if not create one
-                            val existingChat = DatabaseHelper.getActiveChats().find { 
-                                it.title == "${contact.firstName} ${contact.lastName}".trim() ||
-                                it.id == contact.id
-                            }
-                            
-                            val chatId = existingChat?.id ?: "chat_${System.currentTimeMillis()}"
-                            val chatTitle = "${contact.firstName} ${contact.lastName}".trim().ifEmpty { 
+                            // Navigate to ChatActivity for this contact.
+                            // Use stable chat id per contact so we never create duplicate chats.
+                            val stableChatId = "chat_contact_${contact.id}"
+                            val existingChat = DatabaseHelper.getActiveChats().find { it.id == stableChatId }
+                            val chatTitle = "${contact.firstName} ${contact.lastName}".trim().ifEmpty {
                                 contact.email ?: contact.phone ?: "Contact"
                             }
-                            
-                            // Create chat if it doesn't exist
+
+                            // If chat does not exist in ChatsActivity, create it once and add to DB + DatabaseHelper
                             if (existingChat == null) {
                                 val newChat = Chat(
-                                    id = chatId,
+                                    id = stableChatId,
                                     title = chatTitle,
                                     lastMessage = "Chat started",
                                     isActive = true
                                 )
                                 DatabaseHelper.addChat(newChat)
-                            scope.launch {
-                                ChatRepository(context).upsertChat(newChat)
+                                scope.launch {
+                                    ChatRepository(context).upsertChat(newChat)
+                                }
                             }
-                            }
+
+                            val chatId = existingChat?.id ?: stableChatId
                             
                             val intent = Intent(context, ChatActivity::class.java).apply {
                                 putExtra("chat_id", chatId)
@@ -421,8 +419,10 @@ fun NewChatScreen() {
                     result.fold(
                         onSuccess = {
                             addContact(currentUserId, contact)
+                            // Use same stable chat id as contact list so opening this contact reuses the chat
+                            val stableChatId = "chat_contact_${contact.id}"
                             val chat = Chat(
-                                id = "chat_${System.currentTimeMillis()}",
+                                id = stableChatId,
                                 title = "${contact.firstName} ${contact.lastName}".trim(),
                                 lastMessage = "Chat started",
                                 isActive = true
