@@ -7,10 +7,12 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.example.ihatemylife.database.dao.ChatDao
 import com.example.ihatemylife.database.dao.ContactDao
+import com.example.ihatemylife.database.dao.LocalChatMessageDao
 import com.example.ihatemylife.database.dao.MessageDao
 import com.example.ihatemylife.database.dao.UserDao
 import com.example.ihatemylife.database.entities.ChatEntity
 import com.example.ihatemylife.database.entities.ContactEntity
+import com.example.ihatemylife.database.entities.LocalChatMessageEntity
 import com.example.ihatemylife.database.entities.MessageEntity
 import com.example.ihatemylife.database.entities.UserEntity
 
@@ -23,9 +25,10 @@ import com.example.ihatemylife.database.entities.UserEntity
         UserEntity::class,
         MessageEntity::class,
         ChatEntity::class,
-        ContactEntity::class
+        ContactEntity::class,
+        LocalChatMessageEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -33,6 +36,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun messageDao(): MessageDao
     abstract fun chatDao(): ChatDao
     abstract fun contactDao(): ContactDao
+    abstract fun localChatMessageDao(): LocalChatMessageDao
     
     companion object {
         @Volatile

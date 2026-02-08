@@ -4,7 +4,7 @@ package com.example.ihatemylife;
  * Very simple in-memory "database".
  * In a real app, replace this with a proper DatabaseHelper / repository.
  */
-@kotlin.Metadata(mv = {1, 9, 0}, k = 1, xi = 48, d1 = {"\u0000J\n\u0002\u0018\u0002\n\u0002\u0010\u0000\n\u0002\b\u0002\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0000\n\u0002\u0010%\n\u0002\u0010\u000e\n\u0002\u0010!\n\u0002\u0018\u0002\n\u0000\n\u0002\u0018\u0002\n\u0000\n\u0002\u0010\u0002\n\u0002\b\u0002\n\u0002\u0018\u0002\n\u0002\u0010\u000b\n\u0002\b\t\n\u0002\u0010 \n\u0002\b\u0010\b\u00c7\u0002\u0018\u00002\u00020\u0001B\u0007\b\u0002\u00a2\u0006\u0002\u0010\u0002J\u000e\u0010\r\u001a\u00020\u000e2\u0006\u0010\u000f\u001a\u00020\u0005J\"\u0010\u0010\u001a\u000e\u0012\u0004\u0012\u00020\u0012\u0012\u0004\u0012\u00020\b0\u00112\u0006\u0010\u0013\u001a\u00020\b2\u0006\u0010\u0014\u001a\u00020\nJ\u000e\u0010\u0015\u001a\u00020\u000e2\u0006\u0010\u0016\u001a\u00020\fJ\u0006\u0010\u0017\u001a\u00020\u000eJ\u000e\u0010\u0018\u001a\u00020\u000e2\u0006\u0010\u0013\u001a\u00020\bJ\u001c\u0010\u0019\u001a\u00020\u00052\u0006\u0010\u001a\u001a\u00020\b2\f\u0010\u001b\u001a\b\u0012\u0004\u0012\u00020\b0\u001cJ\f\u0010\u001d\u001a\b\u0012\u0004\u0012\u00020\u00050\u001cJ\u0014\u0010\u001e\u001a\b\u0012\u0004\u0012\u00020\n0\u001c2\u0006\u0010\u0013\u001a\u00020\bJ\f\u0010\u001f\u001a\b\u0012\u0004\u0012\u00020\f0\u001cJ\u0014\u0010 \u001a\b\u0012\u0004\u0012\u00020\n0\u001c2\u0006\u0010\u0013\u001a\u00020\bJ\u001c\u0010!\u001a\b\u0012\u0004\u0012\u00020\n0\u001c2\u0006\u0010\u0013\u001a\u00020\b2\u0006\u0010\"\u001a\u00020\bJ\u0014\u0010#\u001a\b\u0012\u0004\u0012\u00020\f0\u001c2\u0006\u0010\"\u001a\u00020\bJ\u0016\u0010$\u001a\u00020\u000e2\u0006\u0010%\u001a\u00020\b2\u0006\u0010&\u001a\u00020\u0012J\u000e\u0010\'\u001a\u00020\u000e2\u0006\u0010\u000f\u001a\u00020\u0005J\u0010\u0010(\u001a\u0004\u0018\u00010\f2\u0006\u0010)\u001a\u00020\bJ\u0010\u0010*\u001a\u0004\u0018\u00010\f2\u0006\u0010+\u001a\u00020\bR\u0014\u0010\u0003\u001a\b\u0012\u0004\u0012\u00020\u00050\u0004X\u0082\u0004\u00a2\u0006\u0002\n\u0000R \u0010\u0006\u001a\u0014\u0012\u0004\u0012\u00020\b\u0012\n\u0012\b\u0012\u0004\u0012\u00020\n0\t0\u0007X\u0082\u0004\u00a2\u0006\u0002\n\u0000R\u0014\u0010\u000b\u001a\b\u0012\u0004\u0012\u00020\f0\tX\u0082\u0004\u00a2\u0006\u0002\n\u0000\u00a8\u0006,"}, d2 = {"Lcom/example/ihatemylife/DatabaseHelper;", "", "()V", "chats", "Landroidx/compose/runtime/snapshots/SnapshotStateList;", "Lcom/example/ihatemylife/Chat;", "userContacts", "", "", "", "Lcom/example/ihatemylife/Contact;", "users", "Lcom/example/ihatemylife/User;", "addChat", "", "chat", "addContact", "Lkotlin/Pair;", "", "userId", "contact", "addUser", "user", "clearAllUserContacts", "clearUserContacts", "createGroupChat", "title", "participantIds", "", "getActiveChats", "getAllAvailableUsers", "getAllUsers", "getUserContacts", "searchContacts", "query", "searchUsers", "setChatActive", "chatId", "active", "updateChat", "userByEmail", "email", "userByUsername", "username", "app_debug"})
+@kotlin.Metadata(mv = {1, 9, 0}, k = 1, xi = 48, d1 = {"\u0000J\n\u0002\u0018\u0002\n\u0002\u0010\u0000\n\u0002\b\u0002\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0000\n\u0002\u0010%\n\u0002\u0010\u000e\n\u0002\u0010!\n\u0002\u0018\u0002\n\u0000\n\u0002\u0018\u0002\n\u0000\n\u0002\u0010\u0002\n\u0002\b\u0002\n\u0002\u0018\u0002\n\u0002\u0010\u000b\n\u0002\b\u000b\n\u0002\u0010 \n\u0002\b\u0010\b\u00c7\u0002\u0018\u00002\u00020\u0001B\u0007\b\u0002\u00a2\u0006\u0002\u0010\u0002J\u000e\u0010\r\u001a\u00020\u000e2\u0006\u0010\u000f\u001a\u00020\u0005J\"\u0010\u0010\u001a\u000e\u0012\u0004\u0012\u00020\u0012\u0012\u0004\u0012\u00020\b0\u00112\u0006\u0010\u0013\u001a\u00020\b2\u0006\u0010\u0014\u001a\u00020\nJ\u000e\u0010\u0015\u001a\u00020\u000e2\u0006\u0010\u0016\u001a\u00020\fJ\u0006\u0010\u0017\u001a\u00020\u000eJ\u0006\u0010\u0018\u001a\u00020\u000eJ\u0006\u0010\u0019\u001a\u00020\u000eJ\u000e\u0010\u001a\u001a\u00020\u000e2\u0006\u0010\u0013\u001a\u00020\bJ\u001c\u0010\u001b\u001a\u00020\u00052\u0006\u0010\u001c\u001a\u00020\b2\f\u0010\u001d\u001a\b\u0012\u0004\u0012\u00020\b0\u001eJ\f\u0010\u001f\u001a\b\u0012\u0004\u0012\u00020\u00050\u001eJ\u0014\u0010 \u001a\b\u0012\u0004\u0012\u00020\n0\u001e2\u0006\u0010\u0013\u001a\u00020\bJ\f\u0010!\u001a\b\u0012\u0004\u0012\u00020\f0\u001eJ\u0014\u0010\"\u001a\b\u0012\u0004\u0012\u00020\n0\u001e2\u0006\u0010\u0013\u001a\u00020\bJ\u001c\u0010#\u001a\b\u0012\u0004\u0012\u00020\n0\u001e2\u0006\u0010\u0013\u001a\u00020\b2\u0006\u0010$\u001a\u00020\bJ\u0014\u0010%\u001a\b\u0012\u0004\u0012\u00020\f0\u001e2\u0006\u0010$\u001a\u00020\bJ\u0016\u0010&\u001a\u00020\u000e2\u0006\u0010\'\u001a\u00020\b2\u0006\u0010(\u001a\u00020\u0012J\u000e\u0010)\u001a\u00020\u000e2\u0006\u0010\u000f\u001a\u00020\u0005J\u0010\u0010*\u001a\u0004\u0018\u00010\f2\u0006\u0010+\u001a\u00020\bJ\u0010\u0010,\u001a\u0004\u0018\u00010\f2\u0006\u0010-\u001a\u00020\bR\u0014\u0010\u0003\u001a\b\u0012\u0004\u0012\u00020\u00050\u0004X\u0082\u0004\u00a2\u0006\u0002\n\u0000R \u0010\u0006\u001a\u0014\u0012\u0004\u0012\u00020\b\u0012\n\u0012\b\u0012\u0004\u0012\u00020\n0\t0\u0007X\u0082\u0004\u00a2\u0006\u0002\n\u0000R\u0014\u0010\u000b\u001a\b\u0012\u0004\u0012\u00020\f0\tX\u0082\u0004\u00a2\u0006\u0002\n\u0000\u00a8\u0006."}, d2 = {"Lcom/example/ihatemylife/DatabaseHelper;", "", "()V", "chats", "Landroidx/compose/runtime/snapshots/SnapshotStateList;", "Lcom/example/ihatemylife/Chat;", "userContacts", "", "", "", "Lcom/example/ihatemylife/Contact;", "users", "Lcom/example/ihatemylife/User;", "addChat", "", "chat", "addContact", "Lkotlin/Pair;", "", "userId", "contact", "addUser", "user", "clearAllChats", "clearAllUserContacts", "clearAllUsers", "clearUserContacts", "createGroupChat", "title", "participantIds", "", "getActiveChats", "getAllAvailableUsers", "getAllUsers", "getUserContacts", "searchContacts", "query", "searchUsers", "setChatActive", "chatId", "active", "updateChat", "userByEmail", "email", "userByUsername", "username", "app_debug"})
 public final class DatabaseHelper {
     @org.jetbrains.annotations.NotNull()
     private static final java.util.List<com.example.ihatemylife.User> users = null;
@@ -86,6 +86,13 @@ public final class DatabaseHelper {
     }
     
     /**
+     * Remove all registered users from the in-memory list.
+     * Use with caution - after this, no one can log in from the local user list until they register again.
+     */
+    public final void clearAllUsers() {
+    }
+    
+    /**
      * Get all user-created contacts for a specific user.
      */
     @org.jetbrains.annotations.NotNull()
@@ -149,5 +156,11 @@ public final class DatabaseHelper {
     @org.jetbrains.annotations.NotNull()
     public final java.util.List<com.example.ihatemylife.Chat> getActiveChats() {
         return null;
+    }
+    
+    /**
+     * Remove all chats from the in-memory list.
+     */
+    public final void clearAllChats() {
     }
 }

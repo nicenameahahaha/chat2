@@ -30,6 +30,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
+import android.widget.Toast
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -69,7 +72,9 @@ class SettingsActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(viewModel: SettingsViewModel) {
-    val activity = LocalContext.current as? ComponentActivity
+    val context = LocalContext.current
+    val activity = context as? ComponentActivity
+    val scope = rememberCoroutineScope()
     val isDarkTheme by viewModel.isDarkTheme.collectAsState()
 
     Scaffold(
@@ -105,6 +110,26 @@ fun SettingsScreen(viewModel: SettingsViewModel) {
                             checked = isDarkTheme,
                             onCheckedChange = { viewModel.setDarkTheme(it) }
                         )
+                    }
+                )
+            }
+
+            // Data Section
+            SettingsSection(title = "Data") {
+                SettingItem(
+                    title = "Clear all contacts and users",
+                    description = "Remove all added contacts and registered users from this device",
+                    action = {
+                        Button(
+                            onClick = {
+                                scope.launch {
+                                    DataCleanup.clearAllContactsAndUsers(context)
+                                    Toast.makeText(context, "All contacts and users cleared", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        ) {
+                            Text("Clear all")
+                        }
                     }
                 )
             }

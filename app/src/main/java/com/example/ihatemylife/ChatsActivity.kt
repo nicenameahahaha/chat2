@@ -1,8 +1,10 @@
 package com.example.ihatemylife
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import com.example.ihatemylife.api.ApiConfig
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -72,6 +74,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.lifecycle.lifecycleScope
 import com.example.ihatemylife.repository.MessageRepository
 import kotlinx.coroutines.launch
+import android.widget.Toast
 
 class ChatsActivity : ComponentActivity() {
     private var lastAppliedDarkTheme: Boolean? = null
@@ -174,6 +177,30 @@ fun ChatsScreen() {
                     onClick = {
                         scope.launch { drawerState.close() }
                         context.startActivity(Intent(context, SettingsActivity::class.java))
+                    },
+                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                )
+
+                NavigationDrawerItem(
+                    label = { Text("Connect Telegram") },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        val url = ApiConfig.getTelegramConnectUrl(context)
+                        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                    },
+                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                )
+
+                NavigationDrawerItem(
+                    label = { Text("Clear all chats") },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        DatabaseHelper.clearAllChats()
+                        SessionMessageStore.clearAll()
+                        viewModel?.clearAllChats()
+                        Toast.makeText(context, "All chats cleared", Toast.LENGTH_SHORT).show()
                     },
                     modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                 )

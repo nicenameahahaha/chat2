@@ -15,6 +15,8 @@ import com.example.ihatemylife.database.dao.ChatDao;
 import com.example.ihatemylife.database.dao.ChatDao_Impl;
 import com.example.ihatemylife.database.dao.ContactDao;
 import com.example.ihatemylife.database.dao.ContactDao_Impl;
+import com.example.ihatemylife.database.dao.LocalChatMessageDao;
+import com.example.ihatemylife.database.dao.LocalChatMessageDao_Impl;
 import com.example.ihatemylife.database.dao.MessageDao;
 import com.example.ihatemylife.database.dao.MessageDao_Impl;
 import com.example.ihatemylife.database.dao.UserDao;
@@ -43,10 +45,12 @@ public final class AppDatabase_Impl extends AppDatabase {
 
   private volatile ContactDao _contactDao;
 
+  private volatile LocalChatMessageDao _localChatMessageDao;
+
   @Override
   @NonNull
   protected SupportSQLiteOpenHelper createOpenHelper(@NonNull final DatabaseConfiguration config) {
-    final SupportSQLiteOpenHelper.Callback _openCallback = new RoomOpenHelper(config, new RoomOpenHelper.Delegate(1) {
+    final SupportSQLiteOpenHelper.Callback _openCallback = new RoomOpenHelper(config, new RoomOpenHelper.Delegate(2) {
       @Override
       public void createAllTables(@NonNull final SupportSQLiteDatabase db) {
         db.execSQL("CREATE TABLE IF NOT EXISTS `users` (`id` INTEGER NOT NULL, `username` TEXT NOT NULL, `syncedAt` INTEGER NOT NULL, PRIMARY KEY(`id`))");
@@ -56,8 +60,11 @@ public final class AppDatabase_Impl extends AppDatabase {
         db.execSQL("CREATE INDEX IF NOT EXISTS `index_messages_timestamp` ON `messages` (`timestamp`)");
         db.execSQL("CREATE TABLE IF NOT EXISTS `chats` (`id` TEXT NOT NULL, `title` TEXT NOT NULL, `lastMessage` TEXT, `lastMessageTimestamp` INTEGER NOT NULL, `isActive` INTEGER NOT NULL, `isGroup` INTEGER NOT NULL, `participantIds` TEXT NOT NULL, `isMuted` INTEGER NOT NULL, `syncedAt` INTEGER NOT NULL, PRIMARY KEY(`id`))");
         db.execSQL("CREATE TABLE IF NOT EXISTS `contacts` (`id` TEXT NOT NULL, `userId` TEXT NOT NULL, `firstName` TEXT NOT NULL, `lastName` TEXT NOT NULL, `email` TEXT, `phone` TEXT, `username` TEXT, `syncedAt` INTEGER NOT NULL, PRIMARY KEY(`id`))");
+        db.execSQL("CREATE TABLE IF NOT EXISTS `local_chat_messages` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `chatId` TEXT NOT NULL, `senderId` INTEGER NOT NULL, `content` TEXT NOT NULL, `timestamp` INTEGER NOT NULL, `replyToMessageId` INTEGER)");
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_local_chat_messages_chatId` ON `local_chat_messages` (`chatId`)");
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_local_chat_messages_timestamp` ON `local_chat_messages` (`timestamp`)");
         db.execSQL("CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)");
-        db.execSQL("INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '2b8e1f8e3501501122b542608dcee88d')");
+        db.execSQL("INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f50d71d7cb9d7dbfbd046e635f10af6f')");
       }
 
       @Override
@@ -66,6 +73,7 @@ public final class AppDatabase_Impl extends AppDatabase {
         db.execSQL("DROP TABLE IF EXISTS `messages`");
         db.execSQL("DROP TABLE IF EXISTS `chats`");
         db.execSQL("DROP TABLE IF EXISTS `contacts`");
+        db.execSQL("DROP TABLE IF EXISTS `local_chat_messages`");
         final List<? extends RoomDatabase.Callback> _callbacks = mCallbacks;
         if (_callbacks != null) {
           for (RoomDatabase.Callback _callback : _callbacks) {
@@ -186,9 +194,27 @@ public final class AppDatabase_Impl extends AppDatabase {
                   + " Expected:\n" + _infoContacts + "\n"
                   + " Found:\n" + _existingContacts);
         }
+        final HashMap<String, TableInfo.Column> _columnsLocalChatMessages = new HashMap<String, TableInfo.Column>(6);
+        _columnsLocalChatMessages.put("id", new TableInfo.Column("id", "INTEGER", true, 1, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsLocalChatMessages.put("chatId", new TableInfo.Column("chatId", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsLocalChatMessages.put("senderId", new TableInfo.Column("senderId", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsLocalChatMessages.put("content", new TableInfo.Column("content", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsLocalChatMessages.put("timestamp", new TableInfo.Column("timestamp", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsLocalChatMessages.put("replyToMessageId", new TableInfo.Column("replyToMessageId", "INTEGER", false, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        final HashSet<TableInfo.ForeignKey> _foreignKeysLocalChatMessages = new HashSet<TableInfo.ForeignKey>(0);
+        final HashSet<TableInfo.Index> _indicesLocalChatMessages = new HashSet<TableInfo.Index>(2);
+        _indicesLocalChatMessages.add(new TableInfo.Index("index_local_chat_messages_chatId", false, Arrays.asList("chatId"), Arrays.asList("ASC")));
+        _indicesLocalChatMessages.add(new TableInfo.Index("index_local_chat_messages_timestamp", false, Arrays.asList("timestamp"), Arrays.asList("ASC")));
+        final TableInfo _infoLocalChatMessages = new TableInfo("local_chat_messages", _columnsLocalChatMessages, _foreignKeysLocalChatMessages, _indicesLocalChatMessages);
+        final TableInfo _existingLocalChatMessages = TableInfo.read(db, "local_chat_messages");
+        if (!_infoLocalChatMessages.equals(_existingLocalChatMessages)) {
+          return new RoomOpenHelper.ValidationResult(false, "local_chat_messages(com.example.ihatemylife.database.entities.LocalChatMessageEntity).\n"
+                  + " Expected:\n" + _infoLocalChatMessages + "\n"
+                  + " Found:\n" + _existingLocalChatMessages);
+        }
         return new RoomOpenHelper.ValidationResult(true, null);
       }
-    }, "2b8e1f8e3501501122b542608dcee88d", "69c49eb4e3012083627d83ec49569a76");
+    }, "f50d71d7cb9d7dbfbd046e635f10af6f", "419ad6e3a5d4d4480533c9c6c871969a");
     final SupportSQLiteOpenHelper.Configuration _sqliteConfig = SupportSQLiteOpenHelper.Configuration.builder(config.context).name(config.name).callback(_openCallback).build();
     final SupportSQLiteOpenHelper _helper = config.sqliteOpenHelperFactory.create(_sqliteConfig);
     return _helper;
@@ -199,7 +225,7 @@ public final class AppDatabase_Impl extends AppDatabase {
   protected InvalidationTracker createInvalidationTracker() {
     final HashMap<String, String> _shadowTablesMap = new HashMap<String, String>(0);
     final HashMap<String, Set<String>> _viewTables = new HashMap<String, Set<String>>(0);
-    return new InvalidationTracker(this, _shadowTablesMap, _viewTables, "users","messages","chats","contacts");
+    return new InvalidationTracker(this, _shadowTablesMap, _viewTables, "users","messages","chats","contacts","local_chat_messages");
   }
 
   @Override
@@ -219,6 +245,7 @@ public final class AppDatabase_Impl extends AppDatabase {
       _db.execSQL("DELETE FROM `messages`");
       _db.execSQL("DELETE FROM `chats`");
       _db.execSQL("DELETE FROM `contacts`");
+      _db.execSQL("DELETE FROM `local_chat_messages`");
       super.setTransactionSuccessful();
     } finally {
       super.endTransaction();
@@ -240,6 +267,7 @@ public final class AppDatabase_Impl extends AppDatabase {
     _typeConvertersMap.put(MessageDao.class, MessageDao_Impl.getRequiredConverters());
     _typeConvertersMap.put(ChatDao.class, ChatDao_Impl.getRequiredConverters());
     _typeConvertersMap.put(ContactDao.class, ContactDao_Impl.getRequiredConverters());
+    _typeConvertersMap.put(LocalChatMessageDao.class, LocalChatMessageDao_Impl.getRequiredConverters());
     return _typeConvertersMap;
   }
 
@@ -310,6 +338,20 @@ public final class AppDatabase_Impl extends AppDatabase {
           _contactDao = new ContactDao_Impl(this);
         }
         return _contactDao;
+      }
+    }
+  }
+
+  @Override
+  public LocalChatMessageDao localChatMessageDao() {
+    if (_localChatMessageDao != null) {
+      return _localChatMessageDao;
+    } else {
+      synchronized(this) {
+        if(_localChatMessageDao == null) {
+          _localChatMessageDao = new LocalChatMessageDao_Impl(this);
+        }
+        return _localChatMessageDao;
       }
     }
   }

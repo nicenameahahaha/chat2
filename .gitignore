@@ -13,3 +13,11 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Backend (Python)
+/backend/.env
+/backend/__pycache__
+/backend/**/__pycache__
+/backend/.pytest_cache
+backend4_extracted
+backend_new_extracted

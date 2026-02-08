@@ -46,6 +46,8 @@ public final class ChatDao_Impl implements ChatDao {
 
   private final SharedSQLiteStatement __preparedStmtOfDeleteChat;
 
+  private final SharedSQLiteStatement __preparedStmtOfDeleteAllChats;
+
   public ChatDao_Impl(@NonNull final RoomDatabase __db) {
     this.__db = __db;
     this.__insertionAdapterOfChatEntity = new EntityInsertionAdapter<ChatEntity>(__db) {
@@ -165,10 +167,18 @@ public final class ChatDao_Impl implements ChatDao {
         return _query;
       }
     };
+    this.__preparedStmtOfDeleteAllChats = new SharedSQLiteStatement(__db) {
+      @Override
+      @NonNull
+      public String createQuery() {
+        final String _query = "DELETE FROM chats";
+        return _query;
+      }
+    };
   }
 
   @Override
-  public Object insertChat(final ChatEntity chat, final Continuation<? super Unit> $completion) {
+  public Object insertChat(final ChatEntity chat, final Continuation<? super Unit> arg1) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -182,12 +192,11 @@ public final class ChatDao_Impl implements ChatDao {
           __db.endTransaction();
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
-  public Object insertChats(final List<ChatEntity> chats,
-      final Continuation<? super Unit> $completion) {
+  public Object insertChats(final List<ChatEntity> chats, final Continuation<? super Unit> arg1) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -201,11 +210,11 @@ public final class ChatDao_Impl implements ChatDao {
           __db.endTransaction();
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
-  public Object updateChat(final ChatEntity chat, final Continuation<? super Unit> $completion) {
+  public Object updateChat(final ChatEntity chat, final Continuation<? super Unit> arg1) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -219,12 +228,12 @@ public final class ChatDao_Impl implements ChatDao {
           __db.endTransaction();
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
   public Object updateLastMessage(final String chatId, final String message, final long timestamp,
-      final Continuation<? super Unit> $completion) {
+      final Continuation<? super Unit> arg3) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -257,12 +266,12 @@ public final class ChatDao_Impl implements ChatDao {
           __preparedStmtOfUpdateLastMessage.release(_stmt);
         }
       }
-    }, $completion);
+    }, arg3);
   }
 
   @Override
   public Object setMuted(final String chatId, final boolean isMuted,
-      final Continuation<? super Unit> $completion) {
+      final Continuation<? super Unit> arg2) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -290,12 +299,12 @@ public final class ChatDao_Impl implements ChatDao {
           __preparedStmtOfSetMuted.release(_stmt);
         }
       }
-    }, $completion);
+    }, arg2);
   }
 
   @Override
   public Object setActive(final String chatId, final boolean isActive,
-      final Continuation<? super Unit> $completion) {
+      final Continuation<? super Unit> arg2) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -323,11 +332,11 @@ public final class ChatDao_Impl implements ChatDao {
           __preparedStmtOfSetActive.release(_stmt);
         }
       }
-    }, $completion);
+    }, arg2);
   }
 
   @Override
-  public Object deleteChat(final String id, final Continuation<? super Unit> $completion) {
+  public Object deleteChat(final String id, final Continuation<? super Unit> arg1) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -352,11 +361,34 @@ public final class ChatDao_Impl implements ChatDao {
           __preparedStmtOfDeleteChat.release(_stmt);
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
-  public Object getChatById(final String id, final Continuation<? super ChatEntity> $completion) {
+  public Object deleteAllChats(final Continuation<? super Unit> arg0) {
+    return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
+      @Override
+      @NonNull
+      public Unit call() throws Exception {
+        final SupportSQLiteStatement _stmt = __preparedStmtOfDeleteAllChats.acquire();
+        try {
+          __db.beginTransaction();
+          try {
+            _stmt.executeUpdateDelete();
+            __db.setTransactionSuccessful();
+            return Unit.INSTANCE;
+          } finally {
+            __db.endTransaction();
+          }
+        } finally {
+          __preparedStmtOfDeleteAllChats.release(_stmt);
+        }
+      }
+    }, arg0);
+  }
+
+  @Override
+  public Object getChatById(final String id, final Continuation<? super ChatEntity> arg1) {
     final String _sql = "SELECT * FROM chats WHERE id = ?";
     final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 1);
     int _argIndex = 1;
@@ -433,7 +465,7 @@ public final class ChatDao_Impl implements ChatDao {
           _statement.release();
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
@@ -599,7 +631,7 @@ public final class ChatDao_Impl implements ChatDao {
   }
 
   @Override
-  public Object getAllActiveChatsList(final Continuation<? super List<ChatEntity>> $completion) {
+  public Object getAllActiveChatsList(final Continuation<? super List<ChatEntity>> arg0) {
     final String _sql = "SELECT * FROM chats WHERE isActive = 1 ORDER BY lastMessageTimestamp DESC";
     final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 0);
     final CancellationSignal _cancellationSignal = DBUtil.createCancellationSignal();
@@ -670,7 +702,7 @@ public final class ChatDao_Impl implements ChatDao {
           _statement.release();
         }
       }
-    }, $completion);
+    }, arg0);
   }
 
   @NonNull

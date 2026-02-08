@@ -42,6 +42,8 @@ public final class ContactDao_Impl implements ContactDao {
 
   private final SharedSQLiteStatement __preparedStmtOfDeleteAllContactsForUser;
 
+  private final SharedSQLiteStatement __preparedStmtOfDeleteAllContacts;
+
   public ContactDao_Impl(@NonNull final RoomDatabase __db) {
     this.__db = __db;
     this.__insertionAdapterOfContactEntity = new EntityInsertionAdapter<ContactEntity>(__db) {
@@ -161,11 +163,18 @@ public final class ContactDao_Impl implements ContactDao {
         return _query;
       }
     };
+    this.__preparedStmtOfDeleteAllContacts = new SharedSQLiteStatement(__db) {
+      @Override
+      @NonNull
+      public String createQuery() {
+        final String _query = "DELETE FROM contacts";
+        return _query;
+      }
+    };
   }
 
   @Override
-  public Object insertContact(final ContactEntity contact,
-      final Continuation<? super Unit> $completion) {
+  public Object insertContact(final ContactEntity contact, final Continuation<? super Unit> arg1) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -179,12 +188,12 @@ public final class ContactDao_Impl implements ContactDao {
           __db.endTransaction();
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
   public Object insertContacts(final List<ContactEntity> contacts,
-      final Continuation<? super Unit> $completion) {
+      final Continuation<? super Unit> arg1) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -198,12 +207,11 @@ public final class ContactDao_Impl implements ContactDao {
           __db.endTransaction();
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
-  public Object updateContact(final ContactEntity contact,
-      final Continuation<? super Unit> $completion) {
+  public Object updateContact(final ContactEntity contact, final Continuation<? super Unit> arg1) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -217,12 +225,12 @@ public final class ContactDao_Impl implements ContactDao {
           __db.endTransaction();
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
   public Object deleteContact(final String id, final String userId,
-      final Continuation<? super Unit> $completion) {
+      final Continuation<? super Unit> arg2) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -253,12 +261,12 @@ public final class ContactDao_Impl implements ContactDao {
           __preparedStmtOfDeleteContact.release(_stmt);
         }
       }
-    }, $completion);
+    }, arg2);
   }
 
   @Override
   public Object deleteAllContactsForUser(final String userId,
-      final Continuation<? super Unit> $completion) {
+      final Continuation<? super Unit> arg1) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -283,12 +291,35 @@ public final class ContactDao_Impl implements ContactDao {
           __preparedStmtOfDeleteAllContactsForUser.release(_stmt);
         }
       }
-    }, $completion);
+    }, arg1);
+  }
+
+  @Override
+  public Object deleteAllContacts(final Continuation<? super Unit> arg0) {
+    return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
+      @Override
+      @NonNull
+      public Unit call() throws Exception {
+        final SupportSQLiteStatement _stmt = __preparedStmtOfDeleteAllContacts.acquire();
+        try {
+          __db.beginTransaction();
+          try {
+            _stmt.executeUpdateDelete();
+            __db.setTransactionSuccessful();
+            return Unit.INSTANCE;
+          } finally {
+            __db.endTransaction();
+          }
+        } finally {
+          __preparedStmtOfDeleteAllContacts.release(_stmt);
+        }
+      }
+    }, arg0);
   }
 
   @Override
   public Object getContactById(final String id, final String userId,
-      final Continuation<? super ContactEntity> $completion) {
+      final Continuation<? super ContactEntity> arg2) {
     final String _sql = "SELECT * FROM contacts WHERE id = ? AND userId = ?";
     final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 2);
     int _argIndex = 1;
@@ -374,12 +405,12 @@ public final class ContactDao_Impl implements ContactDao {
           _statement.release();
         }
       }
-    }, $completion);
+    }, arg2);
   }
 
   @Override
   public Object getContactsForUser(final String userId,
-      final Continuation<? super List<ContactEntity>> $completion) {
+      final Continuation<? super List<ContactEntity>> arg1) {
     final String _sql = "SELECT * FROM contacts WHERE userId = ?";
     final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 1);
     int _argIndex = 1;
@@ -459,7 +490,7 @@ public final class ContactDao_Impl implements ContactDao {
           _statement.release();
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
@@ -551,7 +582,7 @@ public final class ContactDao_Impl implements ContactDao {
 
   @Override
   public Object findContactByEmailOrPhone(final String userId, final String email,
-      final String phone, final Continuation<? super ContactEntity> $completion) {
+      final String phone, final Continuation<? super ContactEntity> arg3) {
     final String _sql = "SELECT * FROM contacts WHERE userId = ? AND (email = ? OR phone = ?)";
     final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 3);
     int _argIndex = 1;
@@ -643,7 +674,7 @@ public final class ContactDao_Impl implements ContactDao {
           _statement.release();
         }
       }
-    }, $completion);
+    }, arg3);
   }
 
   @NonNull

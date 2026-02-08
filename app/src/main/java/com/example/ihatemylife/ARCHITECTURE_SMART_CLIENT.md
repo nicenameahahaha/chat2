@@ -1,4 +1,4 @@
-# Smart Client Architecture (2 clients + 1 backend)
+D# Smart Client Architecture (2 clients + 1 backend)
 
 This document describes how the app achieves a "smart server-side database" feel (global users, presence, interactivity) **without** changing the backend, or with only minimal optional backend changes.
 

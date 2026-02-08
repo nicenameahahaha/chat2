@@ -5,13 +5,14 @@ import com.example.ihatemylife.api.ApiClient
 import com.example.ihatemylife.api.models.ApiMessageCreate
 import com.example.ihatemylife.api.models.ApiMessageOut
 import com.example.ihatemylife.database.AppDatabase
+import com.example.ihatemylife.database.dao.LocalChatMessageDao
 import com.example.ihatemylife.database.dao.MessageDao
 import com.example.ihatemylife.database.dao.UserDao
+import com.example.ihatemylife.database.entities.LocalChatMessageEntity
 import com.example.ihatemylife.database.entities.MessageEntity
 import com.example.ihatemylife.Message
 import com.example.ihatemylife.database.entities.UserEntity
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -25,6 +26,7 @@ class MessageRepository(context: Context) {
     private val apiService = ApiClient.getApiService(context)
     private val messageDao: MessageDao = AppDatabase.getDatabase(context).messageDao()
     private val userDao: UserDao = AppDatabase.getDatabase(context).userDao()
+    private val localChatMessageDao: LocalChatMessageDao = AppDatabase.getDatabase(context).localChatMessageDao()
     
     private val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS", Locale.US).apply {
         timeZone = TimeZone.getTimeZone("UTC")
@@ -143,11 +145,61 @@ class MessageRepository(context: Context) {
     }
 
     /**
-     * Get messages from integrated messengers (e.g. Telegram) for display in chat history.
-     * Placeholder: returns empty list until Telegram integration is implemented.
+     * Get messages from Telegram integration for this user (sender or receiver).
+     * Data comes from local DB after sync; backend includes Telegram messages in "sent" for the linked user.
      */
-    fun getTelegramMessagesForUser(userId: Int): Flow<List<Message>> = flowOf(emptyList())
-    
+    fun getTelegramMessagesForUser(userId: Int): Flow<List<Message>> {
+        return messageDao.getTelegramMessagesForUser(userId)
+            .map { entities -> entities.map { entityToDomain(it) } }
+    }
+
+    /**
+     * Get persisted local messages for a chat (e.g. created-contact chats with no backend user).
+     * Used when otherUserId is null so messages are stored only by chatId.
+     */
+    fun getLocalMessagesForChat(chatId: String): Flow<List<Message>> {
+        return localChatMessageDao.getMessagesByChatId(chatId)
+            .map { entities -> entities.map { localEntityToMessage(it) } }
+    }
+
+    /**
+     * Persist a message for a local-only chat. Call when otherUserId is null (created contact).
+     * Returns the domain Message with a negative id (local messages use negative ids to avoid clashing with backend).
+     */
+    suspend fun insertLocalMessage(
+        chatId: String,
+        senderId: Int,
+        content: String,
+        timestamp: Long = System.currentTimeMillis(),
+        replyToMessageId: Int? = null
+    ): Message {
+        val entity = LocalChatMessageEntity(
+            chatId = chatId,
+            senderId = senderId,
+            content = content,
+            timestamp = timestamp,
+            replyToMessageId = replyToMessageId
+        )
+        val id = localChatMessageDao.insert(entity)
+        return localEntityToMessage(entity.copy(id = id))
+    }
+
+    private fun localEntityToMessage(entity: LocalChatMessageEntity): Message {
+        val negativeId = -(entity.id and 0x7FFFFFFF).toInt()
+        return Message(
+            id = negativeId,
+            senderId = entity.senderId,
+            receiverId = null,
+            content = entity.content,
+            timestamp = entity.timestamp,
+            isDelivered = true,
+            isRead = false,
+            readAt = null,
+            source = "own_messenger",
+            replyToMessageId = entity.replyToMessageId
+        )
+    }
+
     /**
      * Sync messages from API for a user.
      * After inserting messages, discovers sender/receiver IDs and ensures they exist in the users table

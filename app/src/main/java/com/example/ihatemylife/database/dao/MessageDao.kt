@@ -24,6 +24,13 @@ interface MessageDao {
     
     @Query("SELECT * FROM messages WHERE receiverId = :userId ORDER BY timestamp DESC")
     fun getReceivedMessages(userId: Int): Flow<List<MessageEntity>>
+
+    /**
+     * Messages from Telegram integration for this user (sender or receiver).
+     * Populated after sync from backend "sent" (and any future "telegram" endpoint).
+     */
+    @Query("SELECT * FROM messages WHERE source = 'telegram' AND (senderId = :userId OR receiverId = :userId) ORDER BY timestamp ASC")
+    fun getTelegramMessagesForUser(userId: Int): Flow<List<MessageEntity>>
     
     @Query("SELECT * FROM messages WHERE (senderId = :userId OR receiverId = :userId) AND timestamp >= :fromTimestamp ORDER BY timestamp ASC")
     fun getMessagesAfter(userId: Int, fromTimestamp: Long): Flow<List<MessageEntity>>

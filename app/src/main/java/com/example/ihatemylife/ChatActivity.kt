@@ -195,9 +195,16 @@ fun ChatScreen(
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     
-    // Apply per-chat filters and search, then group
-    val filteredMessages = remember(messages, searchQuery, messageSizeFilter) {
+    // Apply per-chat filters and search, then group.
+    // Source filter: "telegram" = only messages from Telegram (cross-checked via backend/DB source field);
+    // "own_messenger" = only messages sent within the messenger (no external sources).
+    val filteredMessages = remember(messages, searchQuery, messageSizeFilter, messengerFilter) {
         var list = messages
+        when (messengerFilter) {
+            "telegram" -> list = list.filter { it.source == "telegram" }
+            "own_messenger" -> list = list.filter { it.source == "own_messenger" }
+            else -> { /* "all" */ }
+        }
         if (searchQuery.isNotBlank()) {
             list = list.filter { it.content.contains(searchQuery, ignoreCase = true) }
         }
@@ -415,7 +422,7 @@ fun ChatScreen(
                             
                             MessageBubble(
                                 message = item.message,
-                                isSentByMe = item.message.senderId == viewModel.currentUserId,
+                                isSentByMe = item.message.senderId == viewModel.currentUserId || viewModel.isCreatedContactChat,
                                 showAvatar = showAvatar,
                                 repliedMessage = repliedMsg,
                                 onSwipeToReply = {
@@ -451,7 +458,7 @@ fun ChatScreen(
                     placeholder = { Text("Type a message...") },
                     modifier = Modifier.weight(1f),
                     singleLine = false,
-                    maxLines = 4,
+                    maxLines = 20,
                     shape = RoundedCornerShape(16.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = Color.Transparent,

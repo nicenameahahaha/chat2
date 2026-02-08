@@ -105,5 +105,12 @@ class ChatRepository(context: Context) {
         val sortedIds = listOf(userId1, userId2).sorted()
         return "chat_${sortedIds[0]}_${sortedIds[1]}"
     }
+
+    /**
+     * Delete all chats from the local database.
+     */
+    suspend fun clearAllChats() {
+        chatDao.deleteAllChats()
+    }
 }
 

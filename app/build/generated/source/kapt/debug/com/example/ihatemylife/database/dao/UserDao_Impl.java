@@ -40,6 +40,8 @@ public final class UserDao_Impl implements UserDao {
 
   private final SharedSQLiteStatement __preparedStmtOfDeleteUser;
 
+  private final SharedSQLiteStatement __preparedStmtOfDeleteAllUsers;
+
   public UserDao_Impl(@NonNull final RoomDatabase __db) {
     this.__db = __db;
     this.__insertionAdapterOfUserEntity = new EntityInsertionAdapter<UserEntity>(__db) {
@@ -89,10 +91,18 @@ public final class UserDao_Impl implements UserDao {
         return _query;
       }
     };
+    this.__preparedStmtOfDeleteAllUsers = new SharedSQLiteStatement(__db) {
+      @Override
+      @NonNull
+      public String createQuery() {
+        final String _query = "DELETE FROM users";
+        return _query;
+      }
+    };
   }
 
   @Override
-  public Object insertUser(final UserEntity user, final Continuation<? super Unit> $completion) {
+  public Object insertUser(final UserEntity user, final Continuation<? super Unit> arg1) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -106,12 +116,11 @@ public final class UserDao_Impl implements UserDao {
           __db.endTransaction();
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
-  public Object insertUsers(final List<UserEntity> users,
-      final Continuation<? super Unit> $completion) {
+  public Object insertUsers(final List<UserEntity> users, final Continuation<? super Unit> arg1) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -125,11 +134,11 @@ public final class UserDao_Impl implements UserDao {
           __db.endTransaction();
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
-  public Object updateUser(final UserEntity user, final Continuation<? super Unit> $completion) {
+  public Object updateUser(final UserEntity user, final Continuation<? super Unit> arg1) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -143,11 +152,11 @@ public final class UserDao_Impl implements UserDao {
           __db.endTransaction();
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
-  public Object deleteUser(final int id, final Continuation<? super Unit> $completion) {
+  public Object deleteUser(final int id, final Continuation<? super Unit> arg1) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -168,11 +177,34 @@ public final class UserDao_Impl implements UserDao {
           __preparedStmtOfDeleteUser.release(_stmt);
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
-  public Object getUserById(final int id, final Continuation<? super UserEntity> $completion) {
+  public Object deleteAllUsers(final Continuation<? super Unit> arg0) {
+    return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
+      @Override
+      @NonNull
+      public Unit call() throws Exception {
+        final SupportSQLiteStatement _stmt = __preparedStmtOfDeleteAllUsers.acquire();
+        try {
+          __db.beginTransaction();
+          try {
+            _stmt.executeUpdateDelete();
+            __db.setTransactionSuccessful();
+            return Unit.INSTANCE;
+          } finally {
+            __db.endTransaction();
+          }
+        } finally {
+          __preparedStmtOfDeleteAllUsers.release(_stmt);
+        }
+      }
+    }, arg0);
+  }
+
+  @Override
+  public Object getUserById(final int id, final Continuation<? super UserEntity> arg1) {
     final String _sql = "SELECT * FROM users WHERE id = ?";
     final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 1);
     int _argIndex = 1;
@@ -209,12 +241,12 @@ public final class UserDao_Impl implements UserDao {
           _statement.release();
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
   public Object getUserByUsername(final String username,
-      final Continuation<? super UserEntity> $completion) {
+      final Continuation<? super UserEntity> arg1) {
     final String _sql = "SELECT * FROM users WHERE username = ?";
     final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 1);
     int _argIndex = 1;
@@ -255,7 +287,7 @@ public final class UserDao_Impl implements UserDao {
           _statement.release();
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
@@ -307,7 +339,7 @@ public final class UserDao_Impl implements UserDao {
   }
 
   @Override
-  public Object getAllUsers(final Continuation<? super List<UserEntity>> $completion) {
+  public Object getAllUsers(final Continuation<? super List<UserEntity>> arg0) {
     final String _sql = "SELECT * FROM users";
     final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 0);
     final CancellationSignal _cancellationSignal = DBUtil.createCancellationSignal();
@@ -342,7 +374,7 @@ public final class UserDao_Impl implements UserDao {
           _statement.release();
         }
       }
-    }, $completion);
+    }, arg0);
   }
 
   @Override

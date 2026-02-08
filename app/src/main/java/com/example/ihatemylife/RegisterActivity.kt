@@ -175,6 +175,14 @@ object DatabaseHelper {
     }
 
     /**
+     * Remove all registered users from the in-memory list.
+     * Use with caution - after this, no one can log in from the local user list until they register again.
+     */
+    fun clearAllUsers() {
+        users.clear()
+    }
+
+    /**
      * Get all user-created contacts for a specific user.
      */
     fun getUserContacts(userId: String): List<Contact> {
@@ -267,6 +275,13 @@ object DatabaseHelper {
      */
     fun getActiveChats(): List<Chat> =
         chats.filter { it.isActive }
+
+    /**
+     * Remove all chats from the in-memory list.
+     */
+    fun clearAllChats() {
+        chats.clear()
+    }
 }
 
 class RegisterActivity : ComponentActivity() {

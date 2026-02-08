@@ -66,5 +66,12 @@ class UserRepository(context: Context) {
         // This would need to be implemented or users are created on registration
         return Result.success(Unit)
     }
+
+    /**
+     * Delete all users from the local database.
+     */
+    suspend fun clearAllUsers() {
+        userDao.deleteAllUsers()
+    }
 }
 

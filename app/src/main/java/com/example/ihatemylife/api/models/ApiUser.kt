@@ -3,9 +3,9 @@ package com.example.ihatemylife.api.models
 import com.google.gson.annotations.SerializedName
 
 /**
- * API model for User matching backend schema
- * Backend endpoint: POST /users/ (UserCreate: username, password)
- * Response: UserOut (id, username)
+ * API model for User matching backend schema (backend4).
+ * Backend: POST /users/ (UserCreate), PATCH /users/{username}/telegram (link Telegram).
+ * Response: UserOut (id, username, telegram_id optional).
  */
 data class ApiUserCreate(
     @SerializedName("username")
@@ -20,6 +20,15 @@ data class ApiUserOut(
     val id: Int,
     
     @SerializedName("username")
-    val username: String
+    val username: String,
+    
+    @SerializedName("telegram_id")
+    val telegramId: Long? = null
+)
+
+/** Body for PATCH /users/{username}/telegram - link Telegram account to app user. */
+data class ApiUserTelegramLink(
+    @SerializedName("telegram_id")
+    val telegramId: Long
 )
 

@@ -56,5 +56,15 @@ class ChatsViewModel(application: Application) : AndroidViewModel(application) {
             chatRepository.setMuted(chatId, isMuted)
         }
     }
+
+    /**
+     * Clear all chats (Room + in-memory). List will update via Flow.
+     */
+    fun clearAllChats() {
+        viewModelScope.launch {
+            chatRepository.clearAllChats()
+            _chats.value = emptyList()
+        }
+    }
 }
 

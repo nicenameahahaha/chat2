@@ -1,8 +1,6 @@
 package com.example.ihatemylife.repository
 
 import android.content.Context
-import com.example.ihatemylife.api.ApiClient
-import com.example.ihatemylife.api.models.ApiContactCreate
 import com.example.ihatemylife.database.AppDatabase
 import com.example.ihatemylife.database.dao.ContactDao
 import com.example.ihatemylife.database.entities.ContactEntity
@@ -11,12 +9,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 /**
- * Repository for contact operations
- * Manages user-created contacts (per-user scoped)
- * Combines local (Room) and remote (API) data sources
+ * Repository for contact operations.
+ * Contacts are stored locally only (current backend has no contacts API).
  */
 class ContactRepository(context: Context) {
-    private val apiService = ApiClient.getApiService(context)
     private val contactDao: ContactDao = AppDatabase.getDatabase(context).contactDao()
     
     /**
@@ -94,27 +90,11 @@ class ContactRepository(context: Context) {
     }
     
     /**
-     * Sync contact to backend
+     * Sync contact to backend.
+     * Current backend (users + messages only) has no contacts API; contacts are stored locally only.
      */
     suspend fun syncContactToBackend(contact: Contact, userId: Int): Result<Unit> {
-        return try {
-            val response = apiService.createContact(
-                ApiContactCreate(
-                    firstName = contact.firstName,
-                    lastName = contact.lastName ?: "",
-                    email = contact.email,
-                    phone = contact.phone,
-                    userId = userId
-                )
-            )
-            if (response.isSuccessful) {
-                Result.success(Unit)
-            } else {
-                Result.failure(Exception(response.message() ?: "Failed to sync contact to backend"))
-            }
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
+        return Result.success(Unit)
     }
     
     /**
@@ -129,6 +109,13 @@ class ContactRepository(context: Context) {
      */
     suspend fun clearContactsForUser(userId: String) {
         contactDao.deleteAllContactsForUser(userId)
+    }
+
+    /**
+     * Delete all contacts from the local database (all users).
+     */
+    suspend fun clearAllContacts() {
+        contactDao.deleteAllContacts()
     }
 }
 

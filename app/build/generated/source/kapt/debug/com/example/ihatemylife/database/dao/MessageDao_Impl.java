@@ -747,6 +747,96 @@ public final class MessageDao_Impl implements MessageDao {
   }
 
   @Override
+  public Flow<List<MessageEntity>> getTelegramMessagesForUser(final int userId) {
+    final String _sql = "SELECT * FROM messages WHERE source = 'telegram' AND (senderId = ? OR receiverId = ?) ORDER BY timestamp ASC";
+    final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 2);
+    int _argIndex = 1;
+    _statement.bindLong(_argIndex, userId);
+    _argIndex = 2;
+    _statement.bindLong(_argIndex, userId);
+    return CoroutinesRoom.createFlow(__db, false, new String[] {"messages"}, new Callable<List<MessageEntity>>() {
+      @Override
+      @NonNull
+      public List<MessageEntity> call() throws Exception {
+        final Cursor _cursor = DBUtil.query(__db, _statement, false, null);
+        try {
+          final int _cursorIndexOfId = CursorUtil.getColumnIndexOrThrow(_cursor, "id");
+          final int _cursorIndexOfSenderId = CursorUtil.getColumnIndexOrThrow(_cursor, "senderId");
+          final int _cursorIndexOfReceiverId = CursorUtil.getColumnIndexOrThrow(_cursor, "receiverId");
+          final int _cursorIndexOfContent = CursorUtil.getColumnIndexOrThrow(_cursor, "content");
+          final int _cursorIndexOfTimestamp = CursorUtil.getColumnIndexOrThrow(_cursor, "timestamp");
+          final int _cursorIndexOfIsDelivered = CursorUtil.getColumnIndexOrThrow(_cursor, "isDelivered");
+          final int _cursorIndexOfIsRead = CursorUtil.getColumnIndexOrThrow(_cursor, "isRead");
+          final int _cursorIndexOfReadAt = CursorUtil.getColumnIndexOrThrow(_cursor, "readAt");
+          final int _cursorIndexOfSource = CursorUtil.getColumnIndexOrThrow(_cursor, "source");
+          final int _cursorIndexOfReplyToMessageId = CursorUtil.getColumnIndexOrThrow(_cursor, "replyToMessageId");
+          final int _cursorIndexOfSyncedAt = CursorUtil.getColumnIndexOrThrow(_cursor, "syncedAt");
+          final List<MessageEntity> _result = new ArrayList<MessageEntity>(_cursor.getCount());
+          while (_cursor.moveToNext()) {
+            final MessageEntity _item;
+            final int _tmpId;
+            _tmpId = _cursor.getInt(_cursorIndexOfId);
+            final int _tmpSenderId;
+            _tmpSenderId = _cursor.getInt(_cursorIndexOfSenderId);
+            final Integer _tmpReceiverId;
+            if (_cursor.isNull(_cursorIndexOfReceiverId)) {
+              _tmpReceiverId = null;
+            } else {
+              _tmpReceiverId = _cursor.getInt(_cursorIndexOfReceiverId);
+            }
+            final String _tmpContent;
+            if (_cursor.isNull(_cursorIndexOfContent)) {
+              _tmpContent = null;
+            } else {
+              _tmpContent = _cursor.getString(_cursorIndexOfContent);
+            }
+            final long _tmpTimestamp;
+            _tmpTimestamp = _cursor.getLong(_cursorIndexOfTimestamp);
+            final boolean _tmpIsDelivered;
+            final int _tmp;
+            _tmp = _cursor.getInt(_cursorIndexOfIsDelivered);
+            _tmpIsDelivered = _tmp != 0;
+            final boolean _tmpIsRead;
+            final int _tmp_1;
+            _tmp_1 = _cursor.getInt(_cursorIndexOfIsRead);
+            _tmpIsRead = _tmp_1 != 0;
+            final Long _tmpReadAt;
+            if (_cursor.isNull(_cursorIndexOfReadAt)) {
+              _tmpReadAt = null;
+            } else {
+              _tmpReadAt = _cursor.getLong(_cursorIndexOfReadAt);
+            }
+            final String _tmpSource;
+            if (_cursor.isNull(_cursorIndexOfSource)) {
+              _tmpSource = null;
+            } else {
+              _tmpSource = _cursor.getString(_cursorIndexOfSource);
+            }
+            final Integer _tmpReplyToMessageId;
+            if (_cursor.isNull(_cursorIndexOfReplyToMessageId)) {
+              _tmpReplyToMessageId = null;
+            } else {
+              _tmpReplyToMessageId = _cursor.getInt(_cursorIndexOfReplyToMessageId);
+            }
+            final long _tmpSyncedAt;
+            _tmpSyncedAt = _cursor.getLong(_cursorIndexOfSyncedAt);
+            _item = new MessageEntity(_tmpId,_tmpSenderId,_tmpReceiverId,_tmpContent,_tmpTimestamp,_tmpIsDelivered,_tmpIsRead,_tmpReadAt,_tmpSource,_tmpReplyToMessageId,_tmpSyncedAt);
+            _result.add(_item);
+          }
+          return _result;
+        } finally {
+          _cursor.close();
+        }
+      }
+
+      @Override
+      protected void finalize() {
+        _statement.release();
+      }
+    });
+  }
+
+  @Override
   public Flow<List<MessageEntity>> getMessagesAfter(final int userId, final long fromTimestamp) {
     final String _sql = "SELECT * FROM messages WHERE (senderId = ? OR receiverId = ?) AND timestamp >= ? ORDER BY timestamp ASC";
     final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 3);

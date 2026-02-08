@@ -2,12 +2,10 @@ package com.example.ihatemylife.api
 
 import com.example.ihatemylife.api.models.ApiMessageCreate
 import com.example.ihatemylife.api.models.ApiMessageOut
-import com.example.ihatemylife.api.models.ApiMessageStatusUpdate
 import com.example.ihatemylife.api.models.ApiAllMessagesResponse
 import com.example.ihatemylife.api.models.ApiUserCreate
 import com.example.ihatemylife.api.models.ApiUserOut
-import com.example.ihatemylife.api.models.ApiContactCreate
-import com.example.ihatemylife.api.models.ApiContactOut
+import com.example.ihatemylife.api.models.ApiUserTelegramLink
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -16,23 +14,22 @@ import retrofit2.http.POST
 import retrofit2.http.Path
 
 /**
- * Retrofit interface for backend API endpoints
- * Matches FastAPI backend structure
+ * Retrofit interface for backend API endpoints (backend4).
+ * Users, messages, integration webhook; link Telegram via PATCH /users/{username}/telegram.
  */
 interface ApiService {
-    
-    // User endpoints
+
+    // ---------- Users ----------
     @POST("users/")
     suspend fun registerUser(@Body user: ApiUserCreate): Response<ApiUserOut>
-    
-    // Contact endpoints
-    @POST("contacts/")
-    suspend fun createContact(@Body contact: ApiContactCreate): Response<ApiContactOut>
-    
-    // Message endpoints
-    @POST("messages/")
-    suspend fun sendMessage(@Body message: ApiMessageCreate): Response<ApiMessageOut>
-    
+
+    @PATCH("users/{username}/telegram")
+    suspend fun linkUserTelegram(
+        @Path("username") username: String,
+        @Body body: ApiUserTelegramLink
+    ): Response<ApiUserOut>
+
+    // ---------- Messages ----------
     @POST("messages/send/{sender_username}/{receiver_username}")
     suspend fun sendMessageToUser(
         @Path("sender_username") senderUsername: String,
