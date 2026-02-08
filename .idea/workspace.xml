@@ -9,18 +9,7 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="23bf7959-05d3-4470-bdaa-caf00b44d15c" name="Changes" comment="hi, last update">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/ihatemylife/viewmodel/ChatsViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/ihatemylife/viewmodel/ChatsViewModel.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/SETUP.md" beforeDir="false" afterPath="$PROJECT_DIR$/backend/SETUP.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/run_telegram_tests.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/База данных/Connection.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/База данных/find user.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/База данных/history.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/База данных/messages.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/База данных/requirements.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/База данных/test_run.py" beforeDir="false" />
-    </list>
+    <list default="true" id="23bf7959-05d3-4470-bdaa-caf00b44d15c" name="Changes" comment="hi, last update maybe" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -37,6 +26,7 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="UPDATE_TYPE" value="REBASE" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
   &quot;lastFilter&quot;: {
@@ -50,6 +40,9 @@
     &quot;accountId&quot;: &quot;09cc56c6-1b99-4e83-a517-574e15a73daf&quot;
   }
 }</component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 5
 }</component>
@@ -179,13 +172,22 @@
       <option name="project" value="LOCAL" />
       <updated>1770558850556</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="hi, last update maybe">
+      <option name="closed" value="true" />
+      <created>1770586480979</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1770586480979</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="hi" />
     <MESSAGE value="hi, last update" />
-    <option name="LAST_COMMIT_MESSAGE" value="hi, last update" />
+    <MESSAGE value="hi, last update maybe" />
+    <option name="LAST_COMMIT_MESSAGE" value="hi, last update maybe" />
   </component>
   <component name="play_dynamic_filters_status">
     <option name="appIdToCheckInfo">

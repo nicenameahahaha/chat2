@@ -3,7 +3,7 @@ package com.example.ihatemylife.api
 import android.content.Context
 
 /**
- * API configuration - base URL for the backend (Interferention-compatible).
+ * API configuration - base URL for the backend (Interferention back4).
  * Default: http://127.0.0.1:8000 (FastAPI: users, messages, webhook/telegram).
  * Backend: POST /users/, PATCH /users/{username}/telegram; messages (send, sent, received, all, conversation, read, delivered).
  * No contacts API; contacts are stored locally only.
