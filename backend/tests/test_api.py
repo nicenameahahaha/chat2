@@ -191,7 +191,6 @@ async def test_send_message_sender_not_found_path(client_with_db, seed_data):
 @pytest.mark.asyncio
 async def test_get_sent_messages(client_with_db, seed_data):
     """GET /messages/sent/{username} — список отправленных."""
-    # Сначала отправим сообщение
     await client_with_db.post(
         "/messages/send/admin/bob",
         json={"content": "Test sent"},
@@ -281,7 +280,6 @@ async def test_mark_as_delivered(client_with_db, seed_data):
         json={"content": "Delivered"},
     )
     msg_id = r.json()["id"]
-    # Уже доставлено, но эндпоинт должен вернуть 200
     response = await client_with_db.patch(f"/messages/{msg_id}/delivered")
     assert response.status_code == 200
     assert response.json()["is_delivered"] is True
@@ -309,7 +307,6 @@ async def test_mark_as_read_wrong_user(client_with_db, seed_data):
         json={"content": "For Bob"},
     )
     msg_id = r.json()["id"]
-    # alice не получатель
     response = await client_with_db.patch(f"/messages/{msg_id}/read/alice")
     assert response.status_code == 404
 

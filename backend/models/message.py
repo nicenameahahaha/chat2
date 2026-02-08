@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean, Enum
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime, timezone
 from db.session import Base
 import enum
 
@@ -21,7 +21,7 @@ class Message(Base):
     receiver_id = Column(Integer, ForeignKey("users.id"), nullable=True)
 
     content = Column(String, nullable=False)
-    timestamp = Column(DateTime, default=datetime.utcnow)
+    timestamp = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     
     # Статусы сообщения (для собственного мессенджера)
     is_delivered = Column(Boolean, default=False, nullable=False)  # Доставлено ли сообщение

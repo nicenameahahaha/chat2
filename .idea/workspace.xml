@@ -9,8 +9,46 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="23bf7959-05d3-4470-bdaa-caf00b44d15c" name="Changes" comment="hi, last update maybe lmao">
+    <list default="true" id="23bf7959-05d3-4470-bdaa-caf00b44d15c" name="Changes" comment="hi, last update maybe lmao &#10;7">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/SETUP.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/api/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/api/integration.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/api/message.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/api/user.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/api/websocket.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/core/config.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/core/security.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/core/ws_manager.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/db/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/db/session.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/db_railway/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/db_railway/connection.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/db_railway/find_user.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/db_railway/history.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/db_railway/messages.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/db_railway/register_user.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/main.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/models/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/models/integration.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/models/message.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/models/user.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/pytest.ini" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/requirements.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/run_all_tests.bat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/schemas/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/schemas/integration.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/schemas/message.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/schemas/user.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/services/integration_service.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/services/message_service.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/services/telegram_service.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/services/user_service.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/tests/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/tests/conftest.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/tests/test_api.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/tests/test_database.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/tests/test_telegram_integration.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -198,7 +236,23 @@
       <option name="project" value="LOCAL" />
       <updated>1770589247075</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="hi, last update maybe lmao &#10;7">
+      <option name="closed" value="true" />
+      <created>1770590323877</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1770590323877</updated>
+    </task>
+    <task id="LOCAL-00008" summary="hi, last update maybe lmao &#10;7">
+      <option name="closed" value="true" />
+      <created>1770590331025</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1770590331025</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -206,7 +260,8 @@
     <MESSAGE value="hi, last update" />
     <MESSAGE value="hi, last update maybe" />
     <MESSAGE value="hi, last update maybe lmao" />
-    <option name="LAST_COMMIT_MESSAGE" value="hi, last update maybe lmao" />
+    <MESSAGE value="hi, last update maybe lmao &#10;7" />
+    <option name="LAST_COMMIT_MESSAGE" value="hi, last update maybe lmao &#10;7" />
   </component>
   <component name="play_dynamic_filters_status">
     <option name="appIdToCheckInfo">

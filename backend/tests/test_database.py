@@ -151,7 +151,6 @@ async def test_link_telegram_unlinks_previous_owner(db_session):
     linked = await link_telegram_to_user(db_session, "u1", 100)
     assert linked.telegram_id == 100
 
-    # u2 больше не имеет этого telegram_id
     u2_refresh = await get_user_by_username(db_session, "u2")
     assert u2_refresh.telegram_id is None
 
@@ -277,7 +276,6 @@ async def test_mark_message_as_delivered(db_session):
             db_session, sender=alice, receiver=bob, content="Deliver",
             source=MessageSource.OWN_MESSENGER
         )
-    # create_message с receiver уже ставит is_delivered=True, но проверим эндпоинт
     updated = await mark_message_as_delivered(db_session, msg.id)
     assert updated.is_delivered is True
 
@@ -306,7 +304,6 @@ async def test_mark_message_as_read_wrong_user(db_session):
     with patch("services.message_service.send_telegram_message", new_callable=AsyncMock):
         msg = await create_own_messenger_message(db_session, alice, bob, "For Bob")
 
-    # alice не получатель
     result = await mark_message_as_read(db_session, msg.id, alice)
     assert result is None
 

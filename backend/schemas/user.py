@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 class UserBase(BaseModel):
     username: str
@@ -7,10 +7,9 @@ class UserCreate(UserBase):
     password: str
 
 class UserOut(UserBase):
+    model_config = ConfigDict(from_attributes=True)
     id: int
     telegram_id: int | None = None
-    class Config:
-        from_attributes = True  # Для Pydantic v2, совместимо с orm_mode
 
 class UserTelegramLink(BaseModel):
     """Привязка Telegram к пользователю приложения."""

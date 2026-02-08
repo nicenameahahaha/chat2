@@ -1,6 +1,6 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from datetime import datetime
+from datetime import datetime, timezone
 
 from models.message import Message, MessageSource
 from models.user import User
@@ -36,7 +36,8 @@ async def create_message(
 
     # Отправка в Telegram получателю (если у получателя привязан ТГ и это не входящее из ТГ)
     if source != MessageSource.TELEGRAM and receiver and receiver.telegram_id:
-        await send_telegram_message(chat_id=receiver.telegram_id, text=message.content)
+        send_text = f"От {sender.username} (мессенджер): {message.content}"
+        await send_telegram_message(chat_id=receiver.telegram_id, text=send_text)
 
     return message
 
@@ -109,7 +110,7 @@ async def mark_message_as_read(db: AsyncSession, message_id: int, user: User) ->
     message = await get_message_by_id(db, message_id)
     if message and message.receiver_id == user.id:
         message.is_read = True
-        message.read_at = datetime.utcnow()
+        message.read_at = datetime.now(timezone.utc)
         await db.commit()
         await db.refresh(message)
         return message
@@ -135,4 +136,3 @@ async def get_conversation(
         .order_by(Message.timestamp)
     )
     return list(result.scalars().all())
-

@@ -25,11 +25,6 @@ DATABASE_URL=sqlite+aiosqlite:///./messenger.db
 DEBUG=True
 ```
 
-Опционально — слой «База данных» (Railway PostgreSQL): добавьте в `.env`:
-```env
-RAILWAY_DATABASE_URL=postgresql://user:password@host:port/dbname
-```
-
 ## 3. База данных
 
 **БД создается автоматически!** При первом запуске приложения все таблицы будут созданы автоматически.
@@ -39,15 +34,6 @@ RAILWAY_DATABASE_URL=postgresql://user:password@host:port/dbname
 Если хотите использовать другую БД (PostgreSQL, MySQL), измените `DATABASE_URL` в `.env`:
 - PostgreSQL: `postgresql+asyncpg://user:password@localhost/dbname`
 - MySQL: `mysql+aiomysql://user:password@localhost/dbname`
-
-### Слой db_railway (База данных / Railway PostgreSQL)
-
-В проекте интегрирован модуль **`db_railway`** (из «База данных»): регистрация и логин пользователей с Argon2, история чатов и отправка сообщений в внешнюю PostgreSQL (например Railway).
-
-- **Расположение:** `backend/db_railway/` — `connection`, `register_user`, `find_user` (login), `history`, `messages`.
-- **Включение:** задайте в `.env` переменную `RAILWAY_DATABASE_URL=postgresql://user:password@host:port/dbname`. Без неё основной бэкенд работает как раньше (SQLAlchemy + `DATABASE_URL`).
-- **Схема БД:** таблицы `users` (username, password, email) и `messages` (sender_id, receiver_id, message, sent_at). Пароли хранятся в виде хэша Argon2.
-- **Использование в коде:** `from db_railway import register_user, login_user, get_chat_history, send_message` — все функции асинхронные.
 
 ## 4. Установка зависимостей
 

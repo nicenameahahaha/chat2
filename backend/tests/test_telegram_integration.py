@@ -88,7 +88,6 @@ async def test_telegram_webhook_receive_message(client_with_db):
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
 
-    # Проверяем, что в БД появились пользователь и сообщение
     from tests.conftest import TestSessionLocal
 
     async with TestSessionLocal() as session:
@@ -149,11 +148,10 @@ async def test_send_message_to_telegram_user(client_with_db, seed_users):
     assert data["content"] == "Привет из мессенджера!"
     assert data["source"] == MessageSource.OWN_MESSENGER.value
 
-    # Бот должен был отправить сообщение в ТГ получателю (bob.telegram_id = 123456789)
     mock_send.assert_called_once()
     call_kwargs = mock_send.call_args.kwargs
     assert call_kwargs["chat_id"] == 123456789
-    assert call_kwargs["text"] == "Привет из мессенджера!"
+    assert call_kwargs["text"] == "От admin (мессенджер): Привет из мессенджера!"
 
 
 @pytest.mark.asyncio
@@ -163,7 +161,6 @@ async def test_send_message_to_user_without_telegram_no_api_call(client_with_db,
     """
     from tests.conftest import TestSessionLocal
 
-    # Создаём пользователя без telegram_id
     async with TestSessionLocal() as session:
         alice = User(username="alice", telegram_id=None)
         session.add(alice)

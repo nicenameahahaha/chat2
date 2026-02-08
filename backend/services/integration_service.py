@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from models.integration import Integration
 from models.message import MessageSource
-from services.user_service import get_user_by_telegram_id, create_telegram_user, get_user_by_username
+from services.user_service import get_user_by_telegram_id, create_telegram_user, get_user_by_username, link_telegram_to_user
 from services.message_service import create_message
 from services.telegram_service import send_telegram_message
 from core.ws_manager import manager
@@ -43,6 +43,8 @@ async def create_integration(db: AsyncSession, service_name: str, api_token: str
 async def handle_telegram_update(db: AsyncSession, update: dict):
     """
     Обработка обновлений из Telegram.
+    - Команда /start — приветствие и инструкция.
+    - Команда /start username — привязка Telegram к пользователю приложения (username).
     - Если текст в формате «@username текст» или «username: текст» — сообщение доставляется
       пользователю username: сохраняется в БД, отправляется ему в ТГ (если привязан) и в приложение по WebSocket.
     - Иначе — сохраняется как входящее из ТГ без получателя и рассылается всем подключённым.
@@ -52,13 +54,40 @@ async def handle_telegram_update(db: AsyncSession, update: dict):
 
     tg_msg = update["message"]
     tg_user_info = tg_msg["from"]
-    text = tg_msg["text"]
+    text = (tg_msg["text"] or "").strip()
     telegram_id = tg_user_info["id"]
-    username = tg_user_info.get("username")
+    tg_username = tg_user_info.get("username")
+    chat_id = tg_msg["chat"]["id"]
+
+    # Обработка команды /start для привязки аккаунта
+    if text == "/start":
+        sender = await get_user_by_telegram_id(db, telegram_id)
+        if not sender:
+            sender = await create_telegram_user(db, telegram_id, tg_username)
+        await send_telegram_message(
+            chat_id,
+            "Добро пожаловать! Чтобы привязать аккаунт приложения, отправьте:\n/start ваш_username_в_приложении",
+        )
+        return
+    if text.startswith("/start "):
+        app_username = text[7:].strip()
+        if app_username:
+            app_user = await get_user_by_username(db, app_username)
+            if app_user:
+                await link_telegram_to_user(db, app_username, telegram_id)
+                await send_telegram_message(chat_id, f"Аккаунт привязан к пользователю {app_username}.")
+            else:
+                await send_telegram_message(
+                    chat_id,
+                    f"Пользователь «{app_username}» не найден. Зарегистрируйтесь в приложении и попробуйте снова.",
+                )
+        else:
+            await send_telegram_message(chat_id, "Укажите username: /start ваш_username")
+        return
 
     sender = await get_user_by_telegram_id(db, telegram_id)
     if not sender:
-        sender = await create_telegram_user(db, telegram_id, username)
+        sender = await create_telegram_user(db, telegram_id, tg_username)
 
     receiver_username, content = _parse_telegram_addressee(text)
     receiver = None
