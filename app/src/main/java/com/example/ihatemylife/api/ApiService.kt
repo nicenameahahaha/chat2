@@ -14,7 +14,7 @@ import retrofit2.http.POST
 import retrofit2.http.Path
 
 /**
- * Retrofit interface for backend API endpoints (backend4).
+ * Retrofit interface for backend API (Interferention-compatible).
  * Users, messages, integration webhook; link Telegram via PATCH /users/{username}/telegram.
  */
 interface ApiService {

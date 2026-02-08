@@ -74,3 +74,7 @@ uvicorn main:app --reload
    - Чтобы отправлять в ТГ существующему пользователю приложения (например, `bob`), привяжите ему Telegram:
      - После того как пользователь написал боту, в БД появится запись с его `telegram_id` (посмотреть можно в списке пользователей или в таблице users).
      - Вызовите **PATCH /users/{username}/telegram** с телом `{"telegram_id": 123456789}` — тогда сообщения, отправленные в приложении пользователю `username`, будут дублироваться ему в Telegram.
+
+## 7. Тесты
+
+Из папки `backend` запустите все тесты: `python -m pytest tests/ -v` (или используйте `run_all_tests.bat`). Только тесты Telegram: `python -m pytest tests/test_telegram_integration.py -v`.

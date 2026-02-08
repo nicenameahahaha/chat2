@@ -16,15 +16,18 @@ import kotlinx.coroutines.launch
  */
 class ChatsViewModel(application: Application) : AndroidViewModel(application) {
     private val chatRepository = ChatRepository(application)
-    
+
     private val _chats = MutableStateFlow<List<Chat>>(emptyList())
-    val chats: StateFlow<List<Chat>> = _chats.asStateFlow()
-    
+    val chats: StateFlow<List<Chat>>
+        get() = _chats.asStateFlow()
+
     private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
-    
+    val isLoading: StateFlow<Boolean>
+        get() = _isLoading.asStateFlow()
+
     private val _error = MutableStateFlow<String?>(null)
-    val error: StateFlow<String?> = _error.asStateFlow()
+    val error: StateFlow<String?>
+        get() = _error.asStateFlow()
     
     init {
         loadChats()

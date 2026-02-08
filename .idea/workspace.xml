@@ -11,6 +11,15 @@
   <component name="ChangeListManager">
     <list default="true" id="23bf7959-05d3-4470-bdaa-caf00b44d15c" name="Changes" comment="hi, last update">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/ihatemylife/viewmodel/ChatsViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/ihatemylife/viewmodel/ChatsViewModel.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/SETUP.md" beforeDir="false" afterPath="$PROJECT_DIR$/backend/SETUP.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/run_telegram_tests.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/База данных/Connection.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/База данных/find user.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/База данных/history.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/База данных/messages.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/База данных/requirements.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/База данных/test_run.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
